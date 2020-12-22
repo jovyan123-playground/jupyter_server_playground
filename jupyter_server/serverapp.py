@@ -515,6 +515,16 @@ flags["no-browser"] = (
     _("Prevent the opening of the default url in the browser."),
 )
 
+flags['autoreload'] = (
+    {'ServerApp': {'autoreload': True}},
+    """Autoreload the webapp
+    Enable reloading of the tornado webapp and all imported Python packages
+    when any changes are made to any Python src files in server or
+    extensions.
+    """
+)
+
+
 # Add notebook manager flags
 flags.update(boolean_flag('script', 'FileContentsManager.save_script',
                'DEPRECATED, IGNORED',
@@ -627,6 +637,10 @@ class ServerApp(JupyterApp):
 
     allow_root = Bool(False, config=True,
         help=_("Whether to allow the user to run the server as root.")
+    )
+
+    autoreload = Bool(False, config=True,
+        help= ("Reload the webapp when changes are made to any Python src files.")
     )
 
     default_url = Unicode('/', config=True,
@@ -1286,6 +1300,7 @@ class ServerApp(JupyterApp):
         if self.allow_origin_pat:
             self.tornado_settings['allow_origin_pat'] = re.compile(self.allow_origin_pat)
         self.tornado_settings['allow_credentials'] = self.allow_credentials
+        self.tornado_settings['autoreload'] = self.autoreload
         self.tornado_settings['cookie_options'] = self.cookie_options
         self.tornado_settings['get_secure_cookie_kwargs'] = self.get_secure_cookie_kwargs
         self.tornado_settings['token'] = self.token
