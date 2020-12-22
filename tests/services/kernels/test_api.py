@@ -189,7 +189,7 @@ async def test_kernel_handler(jp_fetch):
     assert expected_http_error(e, 404, 'Kernel does not exist: ' + bad_id)
 
 
-async def test_connection(jp_fetch, jp_ws_fetch, jp_http_port, jp_auth_header):
+async def atest_connection(jp_fetch, jp_ws_fetch, jp_http_port, jp_auth_header):
     print('hello')
     # Create kernel
     r = await jp_fetch(
