@@ -37,7 +37,6 @@ def main():
         print(fname, sha256)
         cmd += f' -m "{fname}: {sha256}"'
 
-    print(cmd)
     subprocess.run(shlex.split(cmd))
 
 
