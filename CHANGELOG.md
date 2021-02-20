@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.4.0](https://github.com/jupyter-server/jupyter_server/tree/1.4.0) (2021-02-18)
 
+## [1.4.0](https://github.com/jupyter-server/jupyter_server/tree/1.4.0) (2021-02-18)
 
 [Full Changelog](https://github.com/jupyter-server/jupyter_server/compare/1.3.0...HEAD)
 
