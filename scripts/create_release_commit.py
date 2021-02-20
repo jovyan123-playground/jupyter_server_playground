@@ -15,7 +15,7 @@ parser.add_argument(
 )
 
 def main():
-    """Generate a release commit that has the sha256 digests for the release files
+    """Generate a release commit that has the sha256 digests for the release files.
     """
     args = parser.parse_args(sys.argv[1:])
     cmd = f'git commit -am "Publish {args.version}" -m "SHA256 hashes:"'
