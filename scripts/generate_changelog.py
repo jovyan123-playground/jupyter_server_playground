@@ -58,7 +58,7 @@ def update_changelog(branch, version):
         changelog = fid.read()
 
     insertion_marker = '<!-- <INSERT CHANGELOG BELOW> -->'
-    delimiter = f'<!-- CHANGELOG FOR VERSION {version} -->'
+    delimiter = f'<!-- <CHANGELOG FOR VERSION {version}> -->'
     template = f"""
 {insertion_marker}
 
