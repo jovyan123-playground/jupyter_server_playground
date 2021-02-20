@@ -15,6 +15,8 @@ parser.add_argument(
 )
 
 def main():
+    """Generate a release commit that has the sha256 digests for the release files
+    """
     args = parser.parse_args(sys.argv[1:])
     cmd = f'git commit -am "Publish {args.version}" -m "SHA256 hashes:"'
     files = os.listdir('dist')
@@ -33,6 +35,7 @@ def main():
                 if not data:
                     break
                 sha256.update(data)
+
         sha256 = sha256.hexdigest()
         print(fname, sha256)
         cmd += f' -m "{fname}: {sha256}"'

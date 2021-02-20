@@ -16,10 +16,10 @@ parser.add_argument(
 )
 
 def update_changelog(branch, version):
+    """Create a new changelog entry for a given branch and version.
+    """
     since = getoutput(f'git tag --merged {branch}').splitlines()[-1]
-    print(f'Getting changes since {since}')
-
-    output = ''
+    print(f'Getting changes since {since}...')
 
     md = generate_activity_md(
         "jupyter-server/jupyter_server",
