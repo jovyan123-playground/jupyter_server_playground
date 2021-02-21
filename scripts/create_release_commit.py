@@ -5,12 +5,17 @@ import shlex
 import subprocess
 import sys
 
+HERE = osp.abspath(osp.dirname(__file__))
+sys.path.insert(0, HERE)
+from utils import get_version
+
 BUF_SIZE = 65536
 
 DESCRIPTION = "Generate a git commit for a release."
 parser = argparse.ArgumentParser(description=DESCRIPTION)
 parser.add_argument(
-    "version",
+    "--version", "-v",
+    default=get_version(),
     help="""The new version.""",
 )
 
