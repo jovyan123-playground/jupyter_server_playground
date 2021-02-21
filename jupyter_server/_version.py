@@ -1,6 +1,5 @@
 """
 store the current version info of the server.
-
 """
 import re
 
