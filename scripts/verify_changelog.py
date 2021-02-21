@@ -7,6 +7,7 @@ import sys
 
 HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, HERE)
+from generate_changelog import CHANGELOG_FILE, get_changelog_entry, get_delimiters
 from utils import get_branch, get_version
 
 DESCRIPTION = "Verify the changelog for the new release."
@@ -21,6 +22,11 @@ parser.add_argument(
     default=get_version(),
     help="""The new version.""",
 )
+parser.add_argument(
+    "--output", "-o",
+    default="",
+    help="""The output path to store the new change entry if needed.""",
+)
 
 def main():
     """Runs a changelog verification on the new entry.  
@@ -34,13 +40,10 @@ def main():
     args = parser.parse_args(sys.argv[1:])
     version = args.version
     branch = args.branch
+    output = args.output
 
-    with open('CHANGELOG.md') as fid:
+    with open(CHANGELOG_FILE) as fid:
         changelog = fid.read()
-
-    # get the changelog entry from `get_changelog_entry`
-    sys.path.insert(0, HERE)
-    from generate_changelog import CHANGELOG_FILE, get_changelog_entry, get_delimiters
 
     start_delimiter, end_delimiter = get_delimiters(version)
 
@@ -63,9 +66,9 @@ def main():
         if not f'[#{pr}]' in orig_entry:
             raise ValueError(f'PR #{pr} does not belong in the changelog for {version}')
     
-    entry_file = osp.abspath(osp.join(HERE, '..', f'changelog_{version}.md'))
-    with open(entry_file, 'w') as fid:
-        fid.write(new_entry)
+    if output:
+        with open(output, 'w') as fid:
+            fid.write(new_entry)
 
     changelog = changelog.replace(start_delimiter, '')
     changelog = changelog.replace(end_delimiter, '')
@@ -73,7 +76,6 @@ def main():
     with open(CHANGELOG_FILE, 'w') as fid:
         fid.write(changelog)
     
-
 
 if __name__ == "__main__":
     main()
