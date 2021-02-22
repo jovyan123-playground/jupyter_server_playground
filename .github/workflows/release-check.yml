@@ -35,15 +35,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
-    - name: Install the Python dependencies
-      run: |
-        pip install -e .[packaging] codecov
-    - name: List installed packages
-      run: |
-        pip freeze
-        pip check
     - name: Run the check      
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: "master"
+        VERSION: "1.5.1"
+        POST_VERSION: "1.6.0.dev0"
+        CHANGELOG_OUTPUT: "changelog_entry.md"
       run: |
-        bash scripts/release_check.sh
+        bash scripts/changelog_prep.sh
+        bash scripts/release_prep.sh
