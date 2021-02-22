@@ -7,11 +7,19 @@ import sys
 
 HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, HERE)
-from generate_changelog import CHANGELOG_FILE, get_changelog_entry, get_delimiters
+from update_changelog import get_changelog_entry, START_MARKER, END_MARKER
 from utils import get_branch, get_version
 
 DESCRIPTION = "Verify the changelog for the new release."
 parser = argparse.ArgumentParser(description=DESCRIPTION)
+parser.add_argument(
+    "target",
+    help="""The GitHub organization/repo."""
+)
+parser.add_argument(
+    "file",
+    help="""The changelog file path."""
+)
 parser.add_argument(
     "--branch", "-b",
     default=get_branch(),
@@ -27,6 +35,21 @@ parser.add_argument(
     default="",
     help="""The output path to store the new change entry if needed.""",
 )
+parser.add_argument(
+    "--auth",
+    default=None,
+    help=(
+        "An authentication token for GitHub. If None, then the environment "
+        "variable `GITHUB_ACCESS_TOKEN` will be tried."
+    ),
+)
+parser.add_argument(
+    "--resolve-backports",
+    action='store_true',
+    default=False,
+    help="""Whether to resolve meeseeks backports to their original PRS.""",
+)
+
 
 def main():
     """Runs a changelog verification on the new entry.  
@@ -35,27 +58,35 @@ def main():
     Makes sure all of the relevant PRs are in there by PR number 
       (titles might have been edited).
     Writes the changelog entry out to a file.
-    Removes the comment delimiters and overwrites changelog.
+    Updates the comment markers and overwrites changelog.
     """
     args = parser.parse_args(sys.argv[1:])
     version = args.version
     branch = args.branch
     output = args.output
+    target = args.target
+    path = args.path
+    auth = args.auth
+    resolve_backports = args.resolve_backports
 
-    with open(CHANGELOG_FILE) as fid:
+    with open(path) as fid:
         changelog = fid.read()
 
-    start_delimiter, end_delimiter = get_delimiters(version)
-
-    start = changelog.find(start_delimiter)
-    end = changelog.find(end_delimiter)
+    start = changelog.find(START_MARKER)
+    end = changelog.find(END_MARKER)
 
     if start == -1 or end == -1:
-        raise ValueError(f'No changelog entry found for {version}')
+        raise ValueError('Missing new changelog entry delimiter(s)')
 
-    new_entry = changelog[start + len(start_delimiter): end]
+    if start !== changelog.rfind(START_MARKER):
+        raise ValueError('Insert marker appears more than once in changelog')
 
-    orig_entry = get_changelog_entry(branch, version)
+    new_entry = changelog[start + len(START_MARKER): end]
+
+    orig_entry = get_changelog_entry(target, branch, version, auth=auth, resolve_backports=resolve_backports)
+
+    if f'# {version}' not in new_entry:
+        raise ValueError(f'Did not find entry for {version}')
 
     new_prs = re.findall('\[#(\d+)\]', new_entry)
     orig_prs = re.findall('\[#(\d+)\]', orig_entry)
@@ -70,10 +101,12 @@ def main():
         with open(output, 'w') as fid:
             fid.write(new_entry)
 
-    changelog = changelog.replace(start_delimiter, '')
-    changelog = changelog.replace(end_delimiter, '')
+    # Clear out the insertion markers
+    changelog = changelog.replace(END_MARKER, '')
+    marker = f'{START_MARKER}\n{END_MARKER}\n'
+    changelog = changelog.replace(START_MARKER, marker)
 
-    with open(CHANGELOG_FILE, 'w') as fid:
+    with open(path, 'w') as fid:
         fid.write(changelog)
     
 
