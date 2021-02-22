@@ -10,7 +10,7 @@ sys.path.insert(0, HERE)
 from update_changelog import get_changelog_entry, START_MARKER, END_MARKER
 from utils import get_branch, get_version
 
-DESCRIPTION = "Verify the changelog for the new release."
+DESCRIPTION = "Finalize the changelog for the new release."
 parser = argparse.ArgumentParser(description=DESCRIPTION)
 parser.add_argument(
     "target",
@@ -52,13 +52,14 @@ parser.add_argument(
 
 
 def main():
-    """Runs a changelog verification on the new entry.  
-
-    Finds the entry for the version using the delimiter. 
-    Makes sure all of the relevant PRs are in there by PR number 
+    """Finalizes the changelog for the release.
+    
+    - Runs a changelog verification on the new entry.  
+      - Finds the entry for the version using the delimiter. 
+      - Makes sure all of the relevant PRs are in there by PR number 
       (titles might have been edited).
-    Writes the changelog entry out to a file.
-    Updates the comment markers and overwrites changelog.
+    - Optionally writes the changelog entry out to a file.
+    - Updates the comment markers and overwrites changelog.
     """
     args = parser.parse_args(sys.argv[1:])
     version = args.version
@@ -78,7 +79,7 @@ def main():
     if start == -1 or end == -1:
         raise ValueError('Missing new changelog entry delimiter(s)')
 
-    if start !== changelog.rfind(START_MARKER):
+    if start != changelog.rfind(START_MARKER):
         raise ValueError('Insert marker appears more than once in changelog')
 
     new_entry = changelog[start + len(START_MARKER): end]
