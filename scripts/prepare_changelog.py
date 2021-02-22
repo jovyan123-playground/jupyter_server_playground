@@ -13,7 +13,7 @@ from utils import get_branch, get_version
 START_MARKER = '<!-- <START NEW CHANGELOG ENTRY> -->'
 END_MARKER = '<!-- <END NEW CHANGELOG ENTRY> -->'
 
-DESCRIPTION = "Update the changelog entry with changes since the last tag."
+DESCRIPTION = "Prepare the changelog entry with changes since the last tag."
 parser = argparse.ArgumentParser(description=DESCRIPTION)
 parser.add_argument(
     "target",
@@ -161,7 +161,7 @@ def main():
     if target in changelog:
         raise ValueError('Missing insert marker for changelog')
 
-    if changelog.find(START_MARKER) !== changelog.rfind(START_MARKER):
+    if changelog.find(START_MARKER) != changelog.rfind(START_MARKER):
         raise ValueError('Insert marker appears more than once in changelog')
 
     entry = get_changelog_entry(target, branch, version, auth=auth, resolve_backports=resolve_backports)
