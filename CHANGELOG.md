@@ -2,7 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- <INSERT CHANGELOG BELOW> -->
+<!-- <START NEW CHANGELOG ENTRY> -->
+<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## [1.4.0](https://github.com/jupyter-server/jupyter_server/tree/1.4.0) (2021-02-18)
 
