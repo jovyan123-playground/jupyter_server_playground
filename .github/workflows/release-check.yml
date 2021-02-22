@@ -43,5 +43,9 @@ jobs:
         POST_VERSION: "1.6.0.dev0"
         CHANGELOG_OUTPUT: "changelog_entry.md"
       run: |
+        # Use email address for the GitHub Actions bot
+        # https://github.community/t/github-actions-bot-email-address/17204/6
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "GitHub Action"
         bash scripts/changelog_prep.sh
         bash scripts/release_prep.sh
