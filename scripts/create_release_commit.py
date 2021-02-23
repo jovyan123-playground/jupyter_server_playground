@@ -28,7 +28,7 @@ def main():
         raise ValueError('Missing distribution files')
 
     for fname in files:
-        if not args.version in fname:
+        if not str(args.version) in fname:
             print(fname, args.version)
             raise ValueError('Wrong version in distribution files')
 
