@@ -2,13 +2,11 @@ import argparse
 import hashlib
 import os
 import os.path as osp
-import shlex
-import subprocess
 import sys
 
 HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, HERE)
-from utils import get_version
+from utils import get_version, run
 
 BUF_SIZE = 65536
 
@@ -46,7 +44,7 @@ def main():
         print(fname, sha256)
         cmd += f' -m "{fname}: {sha256}"'
 
-    subprocess.run(shlex.split(cmd))
+    run(cmd)
 
 
 if __name__ == "__main__":
