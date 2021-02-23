@@ -38,7 +38,7 @@ jobs:
     - name: Run the check      
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BRANCH: "origin/master"
+        BRANCH: "master"
         VERSION: "1.5.1"
         POST_VERSION: "1.6.0.dev0"
         CHANGELOG_OUTPUT: "changelog_entry.md"
@@ -47,6 +47,5 @@ jobs:
         # https://github.community/t/github-actions-bot-email-address/17204/6
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "GitHub Action"
-        git fetch origin master
         bash scripts/changelog_prep.sh
         bash scripts/release_prep.sh

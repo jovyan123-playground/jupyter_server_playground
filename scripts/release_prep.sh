@@ -2,7 +2,7 @@
 set -ex
 
 # Fetch the target branch
-git fetch ${BRANCH}
+git fetch origin ${BRANCH}
 
 ## Install package with packaging deps
 pip install -e .[packaging]
@@ -47,7 +47,7 @@ fi
 twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 # Verify the commits and tags
-git --no-pager diff HEAD ${BRANCH} > diff.diff
+git --no-pager diff HEAD origin/${BRANCH} > diff.diff
 cat diff.diff | grep ${VERSION}
 if [ -n ${POST_VERSION} ]; then
     cat diff.dif | grep ${POST_VERSION}
