@@ -25,7 +25,6 @@ python scripts/finalize_changelog.py ${TARGET} ${CHANGELOG} --branch ${FULL_BRAN
 # Build and check the dist files
 rm -f dist
 if [ -f ./pyproject.toml ]; then
-    pip install build
     python -m build .
 else
     python setup.py sdist
