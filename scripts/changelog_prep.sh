@@ -24,7 +24,7 @@ git checkout .
 
 ## Verify the change for the PR
 git diff --numstat | wc -l | grep "0"
-git diff --numstat HEAD~1 HEAD | grep "1"
+git diff --numstat HEAD~1 HEAD | wc -l | grep "1"
 git --no-pager diff HEAD ${BRANCH} > diff.diff
 cat diff.diff > grep "# ${VERSION}"
 
