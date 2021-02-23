@@ -97,7 +97,7 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
         A formatted changelog entry with markers
     """
     since = run(f'git tag --merged origin/{branch}')
-    since = since.decode('utf-8').splitlines()[-1]
+    since = since.splitlines()[-1]
     print(f'Getting changes since {since}...')
 
     md = generate_activity_md(
