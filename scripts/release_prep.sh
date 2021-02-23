@@ -1,31 +1,41 @@
 # Publish Action
 set -ex
 
-# Fetch the target branch
-git remote add upstream https://github.com/${TARGET} || true
-git fetch upstream ${BRANCH} --tags
-ORIG_BRANCH=${BRANCH}
-BRANCH="upstream/${BRANCH}"
+# Handle the target branch
+BRANCH=${BRANCH}
+FULL_BRANCH="${REMOTE}/${BRANCH}"
 
 ## Install package with packaging deps
 pip install -e .[packaging]
 
 # Bump the verison
-tbump --non-interactive --only-patch ${VERSION}
+${VERSION_COMMAND} ${VERSION}
+
+# TODO: Should allow for a prerelease build step here
+# For lab it would be `yarn publish:js` and `yarn prepare:python-release`
+# For notebook it would be `npm install -g po2json`
 
 # Finalize the changelog and write changelog entry file
-python scripts/finalize_changelog.py ${TARGET} ${CHANGELOG} --branch ${BRANCH} -o ${CHANGELOG_OUTPUT}
+python scripts/finalize_changelog.py ${TARGET} ${CHANGELOG} --branch ${FULL_BRANCH} -o ${CHANGELOG_OUTPUT}
 
 # Build and check the dist files
 rm -f dist
-python setup.py sdist
-python setup.py bdist_wheel
+if [ -f ./pyproject.toml ]; then
+    pip install build
+    python -m build .
+else
+    python setup.py sdist
+    python setup.py bdist_wheel
+fi
 twine check dist/*
 
 # Test sdist in venv
 virtualenv -p $(which python3) test_sdist
 fname=$(ls dist/*.tar.gz)
 ./test_sdist/bin/pip install -q ${fname}[test]
+# TODO: This should allow a test command
+#    defaults to `python -m pytest --pyargs <package_name>`
+# for lab it would run `release_test.sh`
 ./test_sdist/bin/pytest --pyargs "jupyter_server"
 
 # Test wheel in venv
@@ -42,7 +52,7 @@ git tag ${VERSION} -a -m "Release ${VERSION}"
 
 # Bump to post version if given
 if [ -n ${POST_VERSION} ]; then
-    tbump --non-interactive --only-patch ${POST_VERSION}
+    ${VERSION_COMMAND} ${POST_VERSION}
     git commit -a -m "Bump to ${POST_VERSION}"
 fi 
 
@@ -64,5 +74,5 @@ cat ${CHANGELOG_OUTPUT} | grep "# ${VERSION}"
 # Follow up actions
 echo "Release Prep Complete!"
 echo("Push to PyPI with `twine upload dist/*`")
-echo("Push changes with `git push upstream ${ORIG_BRANCH} --tags`")
+echo("Push changes with `git push upstream ${BRANCH} --tags`")
 echo("Make a GitHub release with ${CHANGELOG_OUTPUT}")
