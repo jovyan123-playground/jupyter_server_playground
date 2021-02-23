@@ -66,7 +66,7 @@ def main():
     branch = args.branch
     output = args.output
     target = args.target
-    path = args.path
+    path = args.file
     auth = args.auth
     resolve_backports = args.resolve_backports
 
