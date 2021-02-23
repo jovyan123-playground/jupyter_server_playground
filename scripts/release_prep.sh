@@ -63,7 +63,7 @@ fi
 # twine upload -u github_bot --repository-url https://test.pypi.org/legacy/ dist/*
 
 # Verify the commits and tags
-git --no-pager diff HEAD ${BRANCH} > diff.diff
+git --no-pager diff HEAD ${FULL_BRANCH} > diff.diff
 cat diff.diff | grep ${VERSION}
 if [ -n ${POST_VERSION} ]; then
     cat diff.dif | grep ${POST_VERSION}
