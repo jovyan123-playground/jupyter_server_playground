@@ -26,7 +26,6 @@ git checkout .
 git diff --numstat | wc -l | grep "0"
 git diff --numstat HEAD~1 HEAD | grep "1"
 git --no-pager diff HEAD ${BRANCH} > diff.diff
-cat diff.diff
 cat diff.diff > grep "# ${VERSION}"
 
 # Follow up actions
