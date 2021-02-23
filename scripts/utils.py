@@ -6,7 +6,7 @@ HERE = osp.abspath(osp.dirname(__file__))
 
 def run(cmd, **kwargs):
     """Run a command as a subprocess and get the output as a string"""
-    return check_output(shlex.split(cmd), **kargs).decode('utf-8')
+    return check_output(shlex.split(cmd), **kwargs).decode('utf-8')
 
 def get_branch():
     """Get the name of the current git branch"""
