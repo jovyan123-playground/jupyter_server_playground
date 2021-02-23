@@ -39,10 +39,10 @@ jobs:
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: "master"
-        VERSION: "1.5.1"
+        VERSION: "100.5.1"
         TARGET: "jupyter-server/jupyter_server"
         CHANGELOG: "CHANGELOG.md"
-        POST_VERSION: "1.6.0.dev0"
+        POST_VERSION: "100.6.0.dev0"
         CHANGELOG_OUTPUT: "changelog_entry.md"
       run: |
         # Use email address for the GitHub Actions bot
