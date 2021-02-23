@@ -92,6 +92,7 @@ def main():
     new_prs = re.findall('\[#(\d+)\]', new_entry)
     orig_prs = re.findall('\[#(\d+)\]', orig_entry)
     for pr in orig_prs:
+        # TODO: skip if it is the auto changelog PR
         if not f'[#{pr}]' in new_entry:
             raise ValueError(f'Missing PR #{pr} in the changelog')
     for pr in new_prs:

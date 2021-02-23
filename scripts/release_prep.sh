@@ -58,9 +58,7 @@ if [ -n ${POST_VERSION} ]; then
 fi
 
 # Test push to PyPI
-# TODO: need to get a TEST_PYPI_API_TOKEN from 
-# https://test.pypi.org/account/register/
-twine upload -u __token__ password=${TEST_PYPI_TOKEN} --repository-url https://test.pypi.org/legacy/ dist/*
+twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 # Verify the commits and tags
 git --no-pager diff HEAD ${FULL_BRANCH} > diff.diff
