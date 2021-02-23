@@ -1,5 +1,4 @@
 import argparse
-from subprocess import check_output
 import os
 import os.path as osp
 import sys
@@ -8,7 +7,7 @@ from github_activity import generate_activity_md
 
 HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, HERE)
-from utils import get_branch, get_version
+from utils import get_branch, get_version, run
 
 START_MARKER = '<!-- <START NEW CHANGELOG ENTRY> -->'
 END_MARKER = '<!-- <END NEW CHANGELOG ENTRY> -->'
@@ -97,7 +96,7 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     str
         A formatted changelog entry with markers
     """
-    since = check_output(f'git tag --merged {branch}'.split())
+    since = run(f'git tag --merged {branch}')
     since = since.decode('utf-8').splitlines()[-1]
     print(f'Getting changes since {since}...')
 
