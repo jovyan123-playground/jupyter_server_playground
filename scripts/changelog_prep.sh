@@ -2,7 +2,7 @@
 set -ex
 
 # Fetch the target branch
-git fetch origin ${BRANCH}
+git fetch ${BRANCH}
 
 ## Install package with packaging deps
 pip install -e .[packaging]
