@@ -110,7 +110,8 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     )
         
     if not md:
-        raise ValueError('No PRs found')
+        print('No PRs found')
+        return ""
 
     md = md.splitlines()
 
