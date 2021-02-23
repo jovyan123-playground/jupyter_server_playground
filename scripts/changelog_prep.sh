@@ -1,6 +1,9 @@
 # ChangeLog Action
 set -ex
 
+# Fetch the target branch
+git fetch origin ${BRANCH}
+
 ## Install package with packaging deps
 pip install -e .[packaging]
 
@@ -20,7 +23,6 @@ git checkout .
 ## Verify the change for the PR
 git diff --numstat | wc -l | grep "0"
 git diff --numstat HEAD~1 HEAD | grep "1"
-git fetch origin ${BRANCH}
 git --no-pager diff HEAD ${BRANCH} > diff.diff
 cat diff.diff
 cat diff.diff > grep "# ${VERSION}"
