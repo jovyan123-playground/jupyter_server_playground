@@ -111,7 +111,7 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
         
     if not md:
         print('No PRs found')
-        return ""
+        return "## {version}\n## Merged PRs\nNone!"
 
     md = md.splitlines()
 

@@ -54,7 +54,6 @@ cat diff.diff | grep ${VERSION}
 if [ -n ${POST_VERSION} ]; then
     cat diff.dif | grep ${POST_VERSION}
 fi
-cat diff.diff
 git --no-pager tag | grep ${VERSION}
 
 # Verify the changelog output for the GitHub release
