@@ -36,28 +36,38 @@ jobs:
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
     - name: Prep Git
+      env:
+        BRANCH: "master"
       run: |
         # Use email address for the GitHub Actions bot
         # https://github.community/t/github-actions-bot-email-address/17204/6
+        # TODO: this should be another Python script we can call with args
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "GitHub Action"
+        git remote add upstream https://github.com/jupyter-server/jupyter_server
+        git fetch upstream ${BRANCH} --tags
     - name: Run the changelog prep      
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: "master"
         VERSION: "100.5.1"
-        TARGET: "jupyter-server/jupyter_server"
-        CHANGELOG: "CHANGELOG.md"
       run: |
+        export TARGET="jupyter-server/jupyter_server"
+        export CHANGELOG="CHANGELOG.md"
+        export REMOTE="upstream"
+        export VERSION_COMMAND="tbump --non-interactive --only-patch"
         bash scripts/changelog_prep.sh
     - name: Run the release prep      
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: "master"
         VERSION: "100.5.1"
-        TARGET: "jupyter-server/jupyter_server"
-        CHANGELOG: "CHANGELOG.md"
         POST_VERSION: "100.6.0.dev0"
-        CHANGELOG_OUTPUT: "changelog_entry.md"
       run: |
+        export TARGET="jupyter-server/jupyter_server"
+        export CHANGELOG="CHANGELOG.md"
+        export CHANGELOG_OUTPUT="changelog_entry.md"
+        export VERSION_COMMAND="tbump --non-interactive --only-patch"
+        # TODO: when we call Python just pass in the full branch and split
+        export REMOTE="upstream"  
         bash scripts/release_prep.sh
