@@ -1,7 +1,5 @@
 name: Jupyter Server Tests [Mac OS]
 on:
-  push:
-    branches: '*'
   pull_request:
     branches: '*'
 jobs:
