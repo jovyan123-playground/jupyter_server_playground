@@ -36,14 +36,14 @@ twine check dist/*
 NAME=$(python setup.py --name)
 virtualenv -p $(which python3) test_sdist
 fname=$(ls dist/*.tar.gz)
-#./test_sdist/bin/pip install -q ${fname}[test]
-#./test_sdist/bin/pytest --pyargs "${NAME}"
+./test_sdist/bin/pip install -q ${fname}[test]
+./test_sdist/bin/pytest --pyargs "${NAME}"
 
 # Test wheel in venv
 virtualenv -p $(which python3) test_wheel
 fname=$(ls dist/*.whl)
-#./test_wheel/bin/pip install -q ${fname}[test]
-#./test_wheel/bin/pytest --pyargs "${NAME}"
+./test_wheel/bin/pip install -q ${fname}[test]
+./test_wheel/bin/pytest --pyargs "${NAME}"
 
 # Create the commit with shas
 python scripts/create_release_commit.py
