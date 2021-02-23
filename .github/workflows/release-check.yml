@@ -40,6 +40,8 @@ jobs:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: "master"
         VERSION: "1.5.1"
+        TARGET: "jupyter-server/jupyter_server"
+        CHANGELOG: "CHANGELOG.md"
         POST_VERSION: "1.6.0.dev0"
         CHANGELOG_OUTPUT: "changelog_entry.md"
       run: |
