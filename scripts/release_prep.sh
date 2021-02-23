@@ -62,6 +62,7 @@ cat ${CHANGELOG_OUTPUT}
 cat ${CHANGELOG_OUTPUT} | grep "# ${VERSION}"
 
 # Follow up actions
+echo "Release Prep Complete!"
 echo("Push to PyPI with `twine upload dist/*`")
 echo("Push changes with `git push upstream ${ORIG_BRANCH} --tags`")
 echo("Make a GitHub release with ${CHANGELOG_OUTPUT}")

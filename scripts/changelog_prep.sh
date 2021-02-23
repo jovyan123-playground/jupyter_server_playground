@@ -29,4 +29,5 @@ git --no-pager diff HEAD ${BRANCH} > diff.diff
 cat diff.diff | grep "# ${VERSION}"
 
 # Follow up actions
-echo "Create a PR for the Changleg"
+echo "Changelog Prep Complete!"
+echo "Create a PR for the Changelog change"
