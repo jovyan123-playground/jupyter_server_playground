@@ -29,8 +29,7 @@ def main():
 
     for fname in files:
         if not str(args.version) in fname:
-            print(repr(fname), repr(args.version))
-            raise ValueError('Wrong version in distribution files')
+            raise ValueError(f'Version {args.version} not found in {fname}')
 
         sha256 = hashlib.sha256()
 
