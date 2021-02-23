@@ -1,4 +1,5 @@
 # Publish Action
+set -ex
 
 ## Install package with packaging deps
 pip install -e .[packaging]
@@ -43,6 +44,7 @@ fi
 twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 # Verify the commits and tags
+git fetch origin ${BRANCH}
 git --no-pager diff HEAD ${BRANCH} > diff.diff
 cat diff.diff | grep ${VERSION}
 if [ -n ${POST_VERSION} ]; then
