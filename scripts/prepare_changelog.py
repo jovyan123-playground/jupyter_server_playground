@@ -157,7 +157,7 @@ def main():
 
     target = f"{START_MARKER}\n{END_MARKER}"
 
-    if target in changelog:
+    if target not in changelog:
         raise ValueError('Missing insert marker for changelog')
 
     if changelog.find(START_MARKER) != changelog.rfind(START_MARKER):
