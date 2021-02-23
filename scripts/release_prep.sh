@@ -58,7 +58,7 @@ if [ -n ${POST_VERSION} ]; then
 fi
 
 # Test push to PyPI
-twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+twine upload --repository-url https://test.pypi.org/legacy/ --skip-existing dist/*
 
 # Verify the commits and tags
 git --no-pager diff HEAD ${FULL_BRANCH} > diff.diff
