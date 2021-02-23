@@ -14,8 +14,9 @@ ${VERSION_COMMAND} ${VERSION}
 ## Prepare the changelog
 python scripts/prepare_changelog.py ${TARGET} ${CHANGELOG} --branch ${FULL_BRANCH}
 
-## TODO allow a post changelog script
-## This would be used by lumino to add JS packages
+## TODO the rest of this is a separate Python script so you can do
+## something else after prepare_changelog (or wrap it)
+##  lumino would add JS package versions to the changelog entry
 
 ## Commit the changelog
 git add CHANGELOG.md
