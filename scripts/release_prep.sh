@@ -4,6 +4,7 @@ set -ex
 # Fetch the target branch
 git remote add upstream https://github.com/{$TARGET}
 git fetch upstream ${BRANCH} --tags
+ORIG_BRANCH=${BRANCH}
 BRANCH="upstream/${BRANCH}"
 
 ## Install package with packaging deps
@@ -61,6 +62,6 @@ cat ${CHANGELOG_OUTPUT}
 cat ${CHANGELOG_OUTPUT} | grep "# ${VERSION}"
 
 # Follow up actions
-# - Push to PyPI
-# - Push commit(s) and tags to target branch
-# - Make a GitHub Release
+echo("Push to PyPI with `twine upload dist/*`")
+echo("Push changes with `git push upstream ${ORIG_BRANCH} --tags`")
+echo("Make a GitHub release with ${CHANGELOG_OUTPUT}")
