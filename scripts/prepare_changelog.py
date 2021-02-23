@@ -148,7 +148,7 @@ def main():
     version = args.version
     branch = args.branch
     target = args.target
-    path = args.path
+    path = args.file
     auth = args.auth
     resolve_backports = args.resolve_backports
 
