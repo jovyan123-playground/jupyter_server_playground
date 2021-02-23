@@ -66,7 +66,7 @@ fi
 git --no-pager diff HEAD ${FULL_BRANCH} > diff.diff
 cat diff.diff | grep ${VERSION}
 if [ -n ${POST_VERSION} ]; then
-    cat diff.dif | grep ${POST_VERSION}
+    cat diff.diff | grep ${POST_VERSION}
 fi
 git --no-pager tag | grep ${VERSION}
 
