@@ -14,7 +14,7 @@ pip install -e .[packaging]
 tbump --non-interactive --only-patch ${VERSION}
 
 # Finalize the changelog and write changelog entry file
-python scripts/finalize_changelog.py ${TARGET} ${CHANGLOG} --branch ${BRANCH} -o ${CHANGELOG_OUTPUT}
+python scripts/finalize_changelog.py ${TARGET} ${CHANGELOG} --branch ${BRANCH} -o ${CHANGELOG_OUTPUT}
 
 # Build and check the dist files
 rm -f dist
