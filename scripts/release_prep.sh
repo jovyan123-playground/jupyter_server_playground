@@ -36,13 +36,14 @@ fname=$(ls dist/*.tar.gz)
 # TODO: This should allow a test command
 #    defaults to `python -m pytest --pyargs <package_name>`
 # for lab it would run `release_test.sh`
-./test_sdist/bin/pytest --pyargs "jupyter_server"
+NAME=$(python setup.py --name)
+./test_sdist/bin/pytest --pyargs "${NAME}"
 
 # Test wheel in venv
 virtualenv -p $(which python3) test_wheel
 fname=$(ls dist/*.whl)
 ./test_wheel/bin/pip install -q ${fname}[test]
-./test_wheel/bin/pytest --pyargs "jupyter_server"
+./test_wheel/bin/pytest --pyargs "${NAME}"
 
 # Create the commit with shas
 python scripts/create_release_commit.py
@@ -54,7 +55,7 @@ git tag ${VERSION} -a -m "Release ${VERSION}"
 if [ -n ${POST_VERSION} ]; then
     ${VERSION_COMMAND} ${POST_VERSION}
     git commit -a -m "Bump to ${POST_VERSION}"
-fi 
+fi
 
 # Test push to PyPI
 twine upload --repository-url https://test.pypi.org/legacy/ dist/*
