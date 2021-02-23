@@ -7,7 +7,7 @@ import sys
 
 HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, HERE)
-from update_changelog import get_changelog_entry, START_MARKER, END_MARKER
+from prepare_changelog import get_changelog_entry, START_MARKER, END_MARKER
 from utils import get_branch, get_version
 
 DESCRIPTION = "Finalize the changelog for the new release."
