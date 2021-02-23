@@ -59,7 +59,7 @@ setup_args = dict(
                  'pytest', 'pytest-cov',
                  'pytest-tornasync',
                  'pytest-console-scripts', 'ipykernel'],
-        'packaging': ['github-activity', 'tbump', 'twine']
+        'publishing': ['github-activity', 'tbump', 'twine', 'virtualenv']
     },
     python_requires = '>=3.6',
     entry_points = {
