@@ -11,12 +11,16 @@ pip install -e .[packaging]
 # Bump the verison
 ${VERSION_COMMAND} ${VERSION}
 
-# TODO: Should allow for a prerelease build step here
-# For lab it would be `yarn publish:js` and `yarn prepare:python-release`
-# For notebook it would be `npm install -g po2json`
+# For lab we would `yarn publish:js` and `yarn prepare:python-release` here
+# For notebook we would `npm install -g po2json` here
 
 # Finalize the changelog and write changelog entry file
 python scripts/finalize_changelog.py ${TARGET} ${CHANGELOG} --branch ${FULL_BRANCH} -o ${CHANGELOG_OUTPUT}
+
+# TODO: The rest is a separate script that takes an optional test command
+# to run
+#    - defaults to `python -m pytest --pyargs <package_name>`
+#    - for lab it would run `release_test.sh`
 
 # Build and check the dist files
 rm -f dist
@@ -33,9 +37,6 @@ twine check dist/*
 virtualenv -p $(which python3) test_sdist
 fname=$(ls dist/*.tar.gz)
 ./test_sdist/bin/pip install -q ${fname}[test]
-# TODO: This should allow a test command
-#    defaults to `python -m pytest --pyargs <package_name>`
-# for lab it would run `release_test.sh`
 NAME=$(python setup.py --name)
 ./test_sdist/bin/pytest --pyargs "${NAME}"
 
