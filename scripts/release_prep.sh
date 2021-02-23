@@ -2,7 +2,7 @@
 set -ex
 
 # Fetch the target branch
-git remote add upstream https://github.com/{$TARGET}
+git remote add upstream https://github.com/${TARGET} || true
 git fetch upstream ${BRANCH} --tags
 ORIG_BRANCH=${BRANCH}
 BRANCH="upstream/${BRANCH}"
