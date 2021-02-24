@@ -84,7 +84,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ VERSION }}
+        tag_name: ${{ env.VERSION }}
         release_name: Release ${{ VERSION }}
         body_path: ${{ env.CHANGELOG_OUTPUT }}
         prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
