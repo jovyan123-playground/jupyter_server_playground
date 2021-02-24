@@ -92,12 +92,12 @@ jobs:
         draft: true
     - name: Delete Release
       env:
-        RELEASE_ID: ${{ steps.create_release.outputs.id }}}}
+        RELEASE_ID: ${{ steps.create_release.outputs.id }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         curl \
           -X DELETE \
           -H "Accept: application/vnd.github.v3+json" \
           -H "authToken: ${GITHUB_TOKEN}" \
-          https://api.github.com/repos/${TARGET}/releases/${RELEASE_ID}
+          https://api.github.com/repos/jovyan123-playground/jupyter_server_playground/releases/${RELEASE_ID}
         
