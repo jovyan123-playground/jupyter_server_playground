@@ -126,9 +126,6 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
 
     prs = md[start:]
 
-    # Replace "*" unordered list marker with "-" since this is what
-    # Prettier uses
-    prs = re.sub('(\n\* |^\* )', '\n- ', prs)
     if resolve_backports:
         for (ind, line) in enumerate(prs):
             if re.search("[@meeseeksmachine]", line) is not None:
@@ -136,6 +133,12 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
                 prs[ind] = format_pr_entry(match.groups()[0])
 
     prs = '\n'.join(prs).strip()
+
+    # Replace "*" unordered list marker with "-" since this is what
+    # Prettier uses
+    prs = re.sub('^\* ', '- ', prs)
+    prs = re.sub('\n\* ', '\n- ', prs)
+
     output = f"""
 ## {version}
 
@@ -143,6 +146,7 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
 
 {prs}
 """.strip()
+    
     return output
 
 
