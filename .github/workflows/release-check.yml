@@ -48,7 +48,7 @@ jobs:
         echo "FINAL_VERSION=$(echo $VERSION | grep -E "\d+\.\d+\.\d+")" >> $GITHUB_ENV
         echo ${VERSION}
         cat ${GITHUB_ENV}
-        echo $VERSION | grep -E "\d+\.\d+\.\d+"
+        echo ${VERSION} | grep -E "\d+\.\d+\.\d+" || echo "not found"
     - name: Prep Git
       env:
         BRANCH: "master"
