@@ -73,4 +73,5 @@ echo "Make a GitHub release with the following output"
 cat ${CHANGELOG_OUTPUT} 
 
 # TODO
-#- make a new test package so we can test the full workflow
+#- test the full workflow against the playground and the test pypi server
+
