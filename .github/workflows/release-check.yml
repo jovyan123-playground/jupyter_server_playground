@@ -21,11 +21,6 @@ jobs:
        VERSION_COMMAND: "tbump --non-interactive --only-patch"
        CHANGELOG_OUTPUT: "changelog_entry.md"
     steps:
-    - name: Extract Final Version
-      run: |
-        echo "FINAL_VERSION=$(echo ${VERSION} | egrep "[0-9]+\.[0-9]+\.[0-9]+")" >> $GITHUB_ENV
-        echo ${VERSION}
-        cat ${GITHUB_ENV}
     - name: Checkout
       uses: actions/checkout@v1
     - name: Install Python ${{ matrix.python-version }}
@@ -81,7 +76,11 @@ jobs:
         REGISTRY: https://test.pypi.org/legacy/
       run: |
         twine upload --repository-url ${REGISTRY} --skip-existing dist/*
+    - name: Extract Final Version
+      run: |
+        echo "FINAL_VERSION=$(echo ${VERSION} | egrep "[0-9]+\.[0-9]+\.[0-9]+")" >> $GITHUB_ENV
     - name: Create Release
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -91,3 +90,14 @@ jobs:
         body_path: ${{ env.CHANGELOG_OUTPUT }}
         prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
         draft: true
+    - name: Delete Release
+      env:
+        RELEASE_ID: ${{ steps.create_release.outputs.id }}}}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        curl \
+          -X DELETE \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "authToken: ${GITHUB_TOKEN}" \
+          https://api.github.com/repos/${TARGET}/releases/${RELEASE_ID}
+        
