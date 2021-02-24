@@ -43,6 +43,12 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
+    - name: Extract Final Version
+      run: |
+        echo "FINAL_VERSION=$(echo $VERSION | grep -E "\d+\.\d+\.\d+")" >> $GITHUB_ENV
+        echo ${VERSION}
+        cat ${GITHUB_ENV}
+        echo $VERSION | grep -E "\d+\.\d+\.\d+"
     - name: Prep Git
       env:
         BRANCH: "master"
@@ -76,11 +82,6 @@ jobs:
         REGISTRY: https://test.pypi.org/legacy/
       run: |
         twine upload --repository-url ${REGISTRY} --skip-existing dist/*
-    - name: Extract Final Version
-      run: |
-        echo "FINAL_VERSION=$(echo $VERSION | grep -E \"\d+\.\d+\.\d+\")" >> $GITHUB_ENV
-        echo ${VERSION}
-        cat ${GITHUB_ENV}
     - name: Create Release
       uses: actions/create-release@v1
       env:
