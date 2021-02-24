@@ -101,7 +101,7 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     if not since:
         raise ValueError(f'No tags found on branch {branch}')
     since = since.splitlines()[-1]
-    print(f'Getting changes since {since}...')
+    print(f'Getting changes to {target} since {since}...')
 
     md = generate_activity_md(
         target,
