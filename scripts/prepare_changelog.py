@@ -117,14 +117,17 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     md = md.splitlines()
 
     start = -1
+    end = -1
     full_changelog = ''
     for (ind, line) in enumerate(md):
         if '[full changelog]' in line:
             full_changelog = line.replace('full changelog', 'Full Changelog')
         elif line.strip().startswith('## Merged PRs'):
             start = ind + 1
+        elif line.strip().startswith('## Contributors to this release'):
+            end = ind
 
-    prs = md[start:]
+    prs = md[start:end]
 
     if resolve_backports:
         for (ind, line) in enumerate(prs):
