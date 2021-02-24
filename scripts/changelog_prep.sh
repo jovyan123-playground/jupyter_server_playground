@@ -11,9 +11,11 @@ ${VERSION_COMMAND} ${VERSION}
 ## Prepare the changelog
 python scripts/prepare_changelog.py ${TARGET} ${CHANGELOG} --branch ${FULL_BRANCH}
 
-## TODO the rest of this is a separate Python script so you can do
-## something else after prepare_changelog (or wrap it)
-##  lumino would add JS package versions to the changelog entry
+# Run the pre release command if given
+if [ -n ${POSTPROCESS_CHANGELOG_COMMAND} ]; then
+    ##  lumino would add JS package versions to the changelog entry
+    ${POSTPROCESS_CHANGELOG_COMMAND}
+fi
 
 ## Commit the changelog
 git add CHANGELOG.md

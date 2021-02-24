@@ -8,15 +8,21 @@ FULL_BRANCH="${REMOTE}/${BRANCH}"
 # Bump the verison
 ${VERSION_COMMAND} ${VERSION}
 
-# For lab we would `yarn publish:js` and `yarn prepare:python-release` here
+# Run the pre release command if given
+if [ -n ${PRELEASE_COMMAND} ]; then
+    # For lab we run `yarn publish:js && yarn prepare:python-release`
+    ${PRELEASE_COMMAND}
+fi
 
 # Finalize the changelog and write changelog entry file
 python scripts/finalize_changelog.py ${TARGET} ${CHANGELOG} --branch ${FULL_BRANCH} -o ${CHANGELOG_OUTPUT}
 
-# TODO: The rest is a separate script that takes an optional test command
-# to run
-#    - defaults to `python -m pytest --pyargs <package_name>`
-#    - for lab it would run `release_test.sh`
+NAME=$(python setup.py --name)
+
+# Use a test command if given or default to pytest
+if [ -z ${TEST_COMMAND} ]; then
+    TEST_COMMAND="pytest --pargs $NAME"
+fi
 
 # Build and check the dist files
 rm -f dist
@@ -29,17 +35,20 @@ fi
 twine check dist/*
 
 # Test sdist in venv
-NAME=$(python setup.py --name)
 virtualenv -p $(which python3) test_sdist
 fname=$(ls dist/*.tar.gz)
-#./test_sdist/bin/pip install -q ${fname}[test]
-#./test_sdist/bin/pytest --pyargs "${NAME}"
+source ./test_sdist/bin/activate
+pip install -q ${fname}[test]
+${TEST_COMMAND}
+source ./test_sdist/bin/deactivate
 
 # Test wheel in venv
 virtualenv -p $(which python3) test_wheel
 fname=$(ls dist/*.whl)
-#./test_wheel/bin/pip install -q ${fname}[test]
-#./test_wheel/bin/pytest --pyargs "${NAME}"
+source ./test_wheel/bin/activate
+pip install -q ${fname}[test]
+${TEST_COMMAND}
+source ./test_wheel/bin/deactivate
 
 # Create the commit with shas
 python scripts/create_release_commit.py
@@ -73,6 +82,4 @@ echo "Make a GitHub release with the following output"
 cat ${CHANGELOG_OUTPUT} 
 
 # TODO
-#- figure out how to remove draft release
 #- test the full workflow against the playground and the test pypi server
-

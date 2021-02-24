@@ -90,13 +90,12 @@ jobs:
         body_path: ${{ env.CHANGELOG_OUTPUT }}
         prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
         draft: true
-    - name: Delete Release
+    - name: Delete Draft Release
       env:
         RELEASE_ID: ${{ steps.create_release.outputs.id }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         HTML_URL: ${{ steps.create_release.outputs.html_url}}
       run: |
-        echo ${HTML_URL}
         curl \
           -X DELETE \
           -H "Accept: application/vnd.github.v3+json" \
