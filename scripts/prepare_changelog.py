@@ -164,9 +164,9 @@ def main():
     with open(path) as fid:
         changelog = fid.read()
 
-    target = f"{START_MARKER}\n{END_MARKER}"
+    marker = f"{START_MARKER}\n{END_MARKER}"
 
-    if target not in changelog:
+    if marker not in changelog:
         raise ValueError('Missing insert marker for changelog')
 
     if changelog.find(START_MARKER) != changelog.rfind(START_MARKER):
@@ -175,7 +175,7 @@ def main():
     entry = get_changelog_entry(target, branch, version, auth=auth, resolve_backports=resolve_backports)
    
     template = f"{START_MARKER}\n{entry}\n{END_MARKER}"
-    changelog = changelog.replace(target, template)
+    changelog = changelog.replace(marker, template)
 
     with open(path, 'w') as fid:
         fid.write(changelog)
