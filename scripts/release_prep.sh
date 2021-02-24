@@ -73,5 +73,6 @@ echo "Make a GitHub release with the following output"
 cat ${CHANGELOG_OUTPUT} 
 
 # TODO
+#- test if prerelease works in github release - set version
 #- test the full workflow against the playground and the test pypi server
 
