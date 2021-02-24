@@ -21,6 +21,13 @@ jobs:
        VERSION_COMMAND: "tbump --non-interactive --only-patch"
        CHANGELOG_OUTPUT: "changelog_entry.md"
     steps:
+    - name: Extract Final Version
+      run: |
+        echo "FINAL_VERSION=$(echo $VERSION | grep -Eo "\d+\.\d+\.\d+")" >> $GITHUB_ENV
+        echo ${VERSION}
+        cat ${GITHUB_ENV}
+        echo ${VERSION} | grep -Eo "\d+\.\d+\.\d+" || echo "not found"
+        exit 1
     - name: Checkout
       uses: actions/checkout@v1
     - name: Install Python ${{ matrix.python-version }}
@@ -43,12 +50,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
-    - name: Extract Final Version
-      run: |
-        echo "FINAL_VERSION=$(echo $VERSION | grep -E "\d+\.\d+\.\d+")" >> $GITHUB_ENV
-        echo ${VERSION}
-        cat ${GITHUB_ENV}
-        echo ${VERSION} | grep -E "\d+\.\d+\.\d+" || echo "not found"
     - name: Prep Git
       env:
         BRANCH: "master"
