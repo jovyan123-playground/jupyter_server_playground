@@ -74,7 +74,7 @@ def format_pr_entry(target, number, auth=None):
     url = data['url']
     user_name = data['user']['login']
     user_url = data['user']['html_url']
-    return f"* {title} [{number}]({url}) [@{user_name}]({user_url})"
+    return f"- {title} [{number}]({url}) [@{user_name}]({user_url})"
 
 
 def get_changelog_entry(target, branch, version, auth=None, resolve_backports=False):
@@ -116,17 +116,18 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     md = md.splitlines()
 
     start = -1
-    end = -1
     full_changelog = ''
     for (ind, line) in enumerate(md):
         if '[full changelog]' in line:
             full_changelog = line.replace('full changelog', 'Full Changelog')
         elif line.strip().startswith('## Merged PRs'):
             start = ind + 1
-        elif line.strip().startswith('## Contributors to this release'):
-            end = ind
 
-    prs = md[start:end]
+    prs = md[start:]
+
+    # Replace "*" unordered list marker with "-" since this is what
+    # Prettier uses
+    prs = re.sub('(\n\* |^\* )', '\n- ', prs)
     if resolve_backports:
         for (ind, line) in enumerate(prs):
             if re.search("[@meeseeksmachine]", line) is not None:

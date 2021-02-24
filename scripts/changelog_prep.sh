@@ -5,9 +5,6 @@ set -ex
 BRANCH=${BRANCH}
 FULL_BRANCH="${REMOTE}/${BRANCH}"
 
-## Install package with publishing deps
-pip install -e .[publishing]
-
 ## Bump the verison
 ${VERSION_COMMAND} ${VERSION}
 

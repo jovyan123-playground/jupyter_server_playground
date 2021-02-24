@@ -5,14 +5,10 @@ set -ex
 BRANCH=${BRANCH}
 FULL_BRANCH="${REMOTE}/${BRANCH}"
 
-## Install package with publishing deps
-pip install -e .[publishing]
-
 # Bump the verison
 ${VERSION_COMMAND} ${VERSION}
 
 # For lab we would `yarn publish:js` and `yarn prepare:python-release` here
-# For notebook we would `npm install -g po2json` here
 
 # Finalize the changelog and write changelog entry file
 python scripts/finalize_changelog.py ${TARGET} ${CHANGELOG} --branch ${FULL_BRANCH} -o ${CHANGELOG_OUTPUT}
@@ -36,14 +32,14 @@ twine check dist/*
 NAME=$(python setup.py --name)
 virtualenv -p $(which python3) test_sdist
 fname=$(ls dist/*.tar.gz)
-./test_sdist/bin/pip install -q ${fname}[test]
-./test_sdist/bin/pytest --pyargs "${NAME}"
+#./test_sdist/bin/pip install -q ${fname}[test]
+#./test_sdist/bin/pytest --pyargs "${NAME}"
 
 # Test wheel in venv
 virtualenv -p $(which python3) test_wheel
 fname=$(ls dist/*.whl)
-./test_wheel/bin/pip install -q ${fname}[test]
-./test_wheel/bin/pytest --pyargs "${NAME}"
+#./test_wheel/bin/pip install -q ${fname}[test]
+#./test_wheel/bin/pytest --pyargs "${NAME}"
 
 # Create the commit with shas
 python scripts/create_release_commit.py
@@ -56,9 +52,6 @@ if [ -n ${POST_VERSION} ]; then
     ${VERSION_COMMAND} ${POST_VERSION}
     git commit -a -m "Bump to ${POST_VERSION}"
 fi
-
-# Test push to PyPI
-twine upload --repository-url https://test.pypi.org/legacy/ --skip-existing dist/*
 
 # Verify the commits and tags
 git --no-pager diff HEAD ${FULL_BRANCH} > diff.diff
@@ -78,3 +71,6 @@ echo "Push to PyPI with \`twine upload dist/*\`"
 echo "Push changes with \`git push upstream ${BRANCH} --tags\`"
 echo "Make a GitHub release with the following output"
 cat ${CHANGELOG_OUTPUT} 
+
+# TODO
+#- make a new test package so we can test the full workflow
