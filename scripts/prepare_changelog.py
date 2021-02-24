@@ -1,6 +1,7 @@
 import argparse
 import os
 import os.path as osp
+import re
 import sys
 
 from github_activity import generate_activity_md
