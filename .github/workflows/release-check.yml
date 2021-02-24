@@ -23,10 +23,10 @@ jobs:
     steps:
     - name: Extract Final Version
       run: |
-        echo "FINAL_VERSION=$(python scripts/get_final_version.py)" >> $GITHUB_ENV
+        #echo "FINAL_VERSION=$(python scripts/get_final_version.py)" >> $GITHUB_ENV
         echo ${VERSION}
         cat ${GITHUB_ENV}
-        echo $VERSION | egrep "\d+\.\d+\.\d+"
+        echo $VERSION | egrep "\d+\.\d+\.\d+" || echo "not found"
         exit 1
     - name: Checkout
       uses: actions/checkout@v1
