@@ -135,7 +135,7 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     prs = '\n'.join(prs).strip()
 
     # Move the contributor list to a heading level 3
-    prs = replace('## Contributors', '### Contributors')
+    prs = prs.replace('## Contributors', '### Contributors')
 
     # Replace "*" unordered list marker with "-" since this is what
     # Prettier uses
