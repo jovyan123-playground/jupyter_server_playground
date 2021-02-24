@@ -117,17 +117,14 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     md = md.splitlines()
 
     start = -1
-    end = -1
     full_changelog = ''
     for (ind, line) in enumerate(md):
         if '[full changelog]' in line:
             full_changelog = line.replace('full changelog', 'Full Changelog')
         elif line.strip().startswith('## Merged PRs'):
             start = ind + 1
-        elif line.strip().startswith('## Contributors to this release'):
-            end = ind
 
-    prs = md[start:end]
+    prs = md[start:]
 
     if resolve_backports:
         for (ind, line) in enumerate(prs):
@@ -136,6 +133,9 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
                 prs[ind] = format_pr_entry(match.groups()[0])
 
     prs = '\n'.join(prs).strip()
+
+    # Move the contributor list to a heading level 3
+    prs = replace('## Contributors', '### Contributors')
 
     # Replace "*" unordered list marker with "-" since this is what
     # Prettier uses
