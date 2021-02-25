@@ -38,6 +38,8 @@ parser.add_argument(
 def main():
     """Handle the creation of a new changelog entry"""
     args = parser.parse_args(sys.argv[1:])
+    print('**bailing')
+    sys.exit(1)
     branch = args.branch
     version_spec = args.version
     version_command = args.version_command
@@ -93,12 +95,12 @@ def main():
     create_release_commit()
 
     # Create the annotated release tag
-    run('git tag {version} -a -m "Release {version}"')
+    run('git tag v{version} -a -m "Release v{version}"')
 
     # Bump to post version if given
     if post_version:
         run(f'{version_command} {post_version}')
-        run('git commit -a -m "Bump to {post_version}"')
+        run('git commit -a -m "Bump to v{post_version}"')
 
     # Verify the commits and tags
     diff = run(f'git --no-pager diff HEAD {orig_branch}')
