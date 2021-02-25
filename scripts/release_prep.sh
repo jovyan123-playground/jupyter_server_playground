@@ -5,6 +5,12 @@ set -ex
 BRANCH=${BRANCH}
 FULL_BRANCH="${REMOTE}/${BRANCH}"
 
+
+# Provide default version bump command
+if [ -z ${VERSION_COMMAND} ]; then
+    VERSION_COMMAND="tbump --non-interactive --only-patch"
+fi
+
 # Bump the verison
 ${VERSION_COMMAND} ${VERSION}
 
