@@ -84,7 +84,7 @@ def main(args):
         # Create the virtual environment, upgrade pip,
         # install test requirements, and run test
         run(f'python -m venv {env_name}')
-        run(f'{env_name}/bin/python -m pip install -U pip')
+        run(f'{env_name}/bin/python -m pip install -U -q pip')
         run(f'{env_name}/bin/pip install -q {fname}[test]')
         run(f'{env_name}/bin/{test_command}')
 

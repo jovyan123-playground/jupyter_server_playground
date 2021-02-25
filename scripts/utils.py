@@ -6,6 +6,7 @@ HERE = osp.abspath(osp.dirname(__file__))
 
 def run(cmd, **kwargs):
     """Run a command as a subprocess and get the output as a string"""
+    print(f'+ {cmd}')
     return check_output(shlex.split(cmd), **kwargs).decode('utf-8').strip()
 
 
