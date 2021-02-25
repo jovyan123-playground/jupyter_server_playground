@@ -84,20 +84,21 @@ def main(args):
         # Create the virtual environment, upgrade pip,
         # install test requirements, and run test
         run(f'python -m venv {env_name}')
-        run(f'{env_name}/bin/python -m pip install -U -q pip')
-        run(f'{env_name}/bin/pip install -q {fname}[test]')
-        run(f'{env_name}/bin/{test_command}')
+        # run(f'{env_name}/bin/python -m pip install -U -q pip')
+        # run(f'{env_name}/bin/pip install -q {fname}[test]')
+        # run(f'{env_name}/bin/{test_command}')
 
     # Create the commit with shas
     create_release_commit(version)
 
     # Create the annotated release tag
-    run('git tag v{version} -a -m "Release v{version}"')
+    tag_name = f'v{version}'
+    run('git tag {tag_name} -a -m "Release {tag_name}"')
 
     # Bump to post version if given
     if post_version:
         run(f'{version_command} {post_version}')
-        run('git commit -a -m "Bump to v{post_version}"')
+        run('git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
     diff = run(f'git --no-pager diff HEAD {orig_branch}')
@@ -106,7 +107,7 @@ def main(args):
         assert post_version in diff
 
     tags = run('git --no-pager tag').splitlines()
-    assert version in tags
+    assert tag_name in tags
 
     # Verify the changelog output for the GitHub release
  
