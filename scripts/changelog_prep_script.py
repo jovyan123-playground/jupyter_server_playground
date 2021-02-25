@@ -66,8 +66,8 @@ def main():
     diff = run(f'git --no-pager diff HEAD {branch}')
     assert "# {version}" in diff
 
-    if output:
-        with open(output, 'w') as fid:
+    if output_file:
+        with open(output_file, 'w') as fid:
             fid.write(new_entry)
 
     # Follow up actions
