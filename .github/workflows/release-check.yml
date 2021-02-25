@@ -99,8 +99,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.VERSION }}
-        release_name: Release ${{ env.VERSION }}
+        tag_name: v${{ env.VERSION }}
+        release_name: Release v${{ env.VERSION }}
         body_path: ${{ env.CHANGELOG_OUTPUT }}
         prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
         draft: true
