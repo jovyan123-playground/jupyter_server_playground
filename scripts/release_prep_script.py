@@ -107,7 +107,7 @@ def main(args):
         assert post_version in diff
 
     tags = run('git --no-pager tag').splitlines()
-    assert tag_name in tags
+    assert tag_name in tags, tags
 
     # Verify the changelog output for the GitHub release
  
