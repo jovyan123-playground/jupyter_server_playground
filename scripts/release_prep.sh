@@ -27,7 +27,7 @@ NAME=$(python setup.py --name)
 
 # Use a test command if given or default to pytest
 if [ -z ${TEST_COMMAND} ]; then
-    TEST_COMMAND="pytest --pargs $NAME"
+    TEST_COMMAND="pytest --pyargs $NAME"
 fi
 
 # Build and check the dist files
