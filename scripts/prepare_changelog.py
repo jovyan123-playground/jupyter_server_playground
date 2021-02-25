@@ -183,6 +183,8 @@ def main():
     with open(path, 'w') as fid:
         fid.write(changelog)
 
+    return entry
+
 
 if __name__ == "__main__":
     main()
