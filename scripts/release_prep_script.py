@@ -16,6 +16,11 @@ from utils import run, get_version, get_name
 # Extend the finalize_changelog CLI
 parser.description = "Run the Release Prep Script"
 parser.add_argument(
+    "--version-command", "-vc",
+    default="tbump --non-interactive --only-patch",
+    help="""The version command to run.""",
+)
+parser.add_argument(
     '--prerelease-command', '-pc',
     help="""The prelease command to run after bumping version"""
 )

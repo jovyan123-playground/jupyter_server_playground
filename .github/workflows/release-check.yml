@@ -66,6 +66,7 @@ jobs:
     - name: Make a PR with the changelog entry change
       run: |
         echo "Can't make a PR on the release check"
+        # uses: peter-evans/create-pull-request@v3
         # title="Automated Changelog for ${NEW_VERSION} on ${BRANCH}"
         # branch-suffix=timestamp
         # delete-branch=true
@@ -118,4 +119,5 @@ jobs:
     - name: Push the commit(s) and tag(s) to the branch
       run: |
         echo "Can't push on the release check"
+        # needs GITHUB_TOKEN in final version
         # git push upstream ${BRANCH} --tags
