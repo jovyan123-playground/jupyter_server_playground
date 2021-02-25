@@ -40,7 +40,7 @@ def main():
     version_spec = args.version
     version_command = args.version_command
     postprocess_command = args.postprocess_command
-    changelog = args.changelog
+    changelog = args.file
     output_file = args.output
 
     full_branch = f"{remote}/{branch}"
