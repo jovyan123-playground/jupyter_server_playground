@@ -27,7 +27,7 @@ def main(version):
         raise ValueError('Missing distribution files')
 
     for fname in files:
-        if not str(args.version) in fname:
+        if not str(version) in fname:
             raise ValueError(f'Version {version} not found in {fname}')
 
         sha256 = hashlib.sha256()
