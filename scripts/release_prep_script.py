@@ -68,7 +68,7 @@ def main():
     finalize_changelog()
 
     # Build and check the dist files
-    shutil.rmtree('./dist')
+    shutil.rmtree('./dist', ignore_errors=True)
 
     if osp.exists('./pyproject.toml'):
         run('python -m build .')
