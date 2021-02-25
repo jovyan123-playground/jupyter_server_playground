@@ -47,28 +47,35 @@ jobs:
       env:
         BRANCH: "master"
       run: |
-        # Use email address for the GitHub Actions bot
-        # https://github.community/t/github-actions-bot-email-address/17204/6
-        # TODO: this should be another Python script we can call with args
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --global user.name "GitHub Action"
-        git remote add upstream https://github.com/jupyter-server/jupyter_server
-        git fetch upstream ${BRANCH} --tags
-    - name: Install Depedencies
+        python scripts/git_prep_script.py \
+          jupyter-server/jupyter_server ${BRANCH}
+    - name: Install Dependencies
       run: pip install -e .[publishing]
     - name: Run the changelog prep      
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        export REMOTE="upstream"
-        bash scripts/changelog_prep.sh
+        python scripts/prep_changelog_sript.py \
+          ${TARGET} ${CHANGELOG} \
+          --version ${VERSION} \
+          --post-version ${POST_VERSION} \
+          --output ${CHANGELOG_OUTPUT} \
+          --branch ${BRANCH}
+        cat ${CHANGELOG_OUTPUT}
+    - name: Make a PR with the changelog entry change
+        run: |
+          echo "Can't make a PR on the release check"
     - name: Run the release prep      
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # TODO: when we call Python just pass in the full branch and split
-        export REMOTE="upstream"  
-        bash scripts/release_prep.sh
+        python scripts/prep_release_sript.py \
+          ${TARGET} ${CHANGELOG} \
+          --version ${VERSION} \
+          --post-version ${POST_VERSION} \
+          --output ${CHANGELOG_OUTPUT} \
+          --branch ${BRANCH}
+        cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:
         TWINE_USERNAME: __token__
@@ -96,9 +103,12 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         HTML_URL: ${{ steps.create_release.outputs.html_url}}
       run: |
+        echo "For release check we don't want to leave a draft release open"
         curl \
           -X DELETE \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}
-        
+    - name: Push the commit(s) and tag(s) to the branch
+        run: |
+          echo "Can't push on the release check"
