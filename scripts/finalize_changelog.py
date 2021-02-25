@@ -51,7 +51,7 @@ parser.add_argument(
 )
 
 
-def main():
+def main(args):
     """Finalizes the changelog for the release.
     
     - Runs a changelog verification on the new entry.  
@@ -61,7 +61,6 @@ def main():
     - Optionally writes the changelog entry out to a file.
     - Updates the comment markers and overwrites changelog.
     """
-    args = parser.parse_args(sys.argv[1:])
     version = args.version
     branch = args.branch
     output = args.output
@@ -115,4 +114,5 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
+    args = parser.parse_args(sys.argv[1:])
+    main(args)

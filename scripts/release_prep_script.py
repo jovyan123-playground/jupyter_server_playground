@@ -35,11 +35,8 @@ parser.add_argument(
 )
 
 
-def main():
+def main(args):
     """Handle the creation of a new changelog entry"""
-    args = parser.parse_args(sys.argv[1:])
-    print('**bailing')
-    sys.exit(1)
     branch = args.branch
     version_spec = args.version
     version_command = args.version_command
@@ -66,8 +63,8 @@ def main():
     if prerelease_command:
         run(prerelease_command)
 
-    # Finalize the changelog and write changelog entry file - let it parse CLI
-    finalize_changelog()
+    # Finalize the changelog and write changelog entry file
+    finalize_changelog(args)
 
     # Build and check the dist files
     shutil.rmtree('./dist', ignore_errors=True)
@@ -128,7 +125,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = parser.parse_args(sys.argv[1:])
+    main(args)
 
 # TODO
 #- test the full workflow against the playground and the test pypi server

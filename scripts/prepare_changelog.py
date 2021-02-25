@@ -153,10 +153,9 @@ def get_changelog_entry(target, branch, version, auth=None, resolve_backports=Fa
     return output
 
 
-def main():
+def main(args):
     """Create a new changelog entry for a given branch and version.
     """
-    args = parser.parse_args(sys.argv[1:])
     version = args.version
     branch = args.branch
     target = args.target
@@ -187,4 +186,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = parser.parse_args(sys.argv[1:])
+    main(args)
