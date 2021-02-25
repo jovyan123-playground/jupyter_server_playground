@@ -44,7 +44,7 @@ def main():
     version = get_version()
 
     ## Prepare the changelog - let it pull from CLI args 
-    prepare_changelog()
+    new_entry = prepare_changelog()
 
     # Run the pre release command if given
     if postprocess_command:
