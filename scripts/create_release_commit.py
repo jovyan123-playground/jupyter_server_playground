@@ -18,18 +18,17 @@ parser.add_argument(
     help="""The new version.""",
 )
 
-def main():
+def main(version):
     """Generate a release commit that has the sha256 digests for the release files.
     """
-    args = parser.parse_args(sys.argv[1:])
-    cmd = f'git commit -am "Publish {args.version}" -m "SHA256 hashes:"'
+    cmd = f'git commit -am "Publish v{version}" -m "SHA256 hashes:"'
     files = os.listdir('dist')
     if not len(files) == 2:
         raise ValueError('Missing distribution files')
 
     for fname in files:
         if not str(args.version) in fname:
-            raise ValueError(f'Version {args.version} not found in {fname}')
+            raise ValueError(f'Version {version} not found in {fname}')
 
         sha256 = hashlib.sha256()
 
@@ -48,4 +47,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = parser.parse_args(sys.argv[1:])
+    main(args.version)
