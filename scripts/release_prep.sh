@@ -46,7 +46,7 @@ fname=$(ls dist/*.tar.gz)
 source ./test_sdist/bin/activate
 pip install -q ${fname}[test]
 ${TEST_COMMAND}
-source ./test_sdist/bin/deactivate
+deactivate
 
 # Test wheel in venv
 virtualenv -p $(which python3) test_wheel
@@ -54,7 +54,7 @@ fname=$(ls dist/*.whl)
 source ./test_wheel/bin/activate
 pip install -q ${fname}[test]
 ${TEST_COMMAND}
-source ./test_wheel/bin/deactivate
+deactivate
 
 # Create the commit with shas
 python scripts/create_release_commit.py
