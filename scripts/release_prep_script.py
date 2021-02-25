@@ -78,17 +78,16 @@ def main():
 
     run('twine check dist/*')
 
-    # Test sdist in venv
-    run('python -m venv ./test_sdist')
-    fname = glob('dist/*.tar.gz')[0]
-    run(f'./test_sdist/bin/pip install -q {fname}[test]')
-    run(f'./test_sdist/bin/{test_command}')
-
-    # Test wheel in venv
-    run('python -m venv ./test_wheel')
-    fname = glob('dist/*.whl')[0]
-    run(f'./test_sdist/bin/pip install -q {fname}[test]')
-    run(f'./test_sdist/bin/{test_command}')
+    # Test sdist and wheel in venv
+    for asset in ['gz', 'whl']:
+        env_name = f"./test_{asset}"
+        fname = glob(f'dist/*.{asset}')[0]
+        # Create the virtual environment, upgrade pip,
+        # install test requirements, and run test
+        run(f'python -m venv {env_name}')
+        run(f'{env_name}/bin/python -m pip install -U pip')
+        run(f'{env_name}/bin/pip install -q {fname}[test]')
+        run(f'{env_name}/bin/{test_command}')
 
     # Create the commit with shas
     create_release_commit()
