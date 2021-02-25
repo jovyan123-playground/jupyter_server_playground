@@ -16,6 +16,7 @@ jobs:
        BRANCH: "master"
        VERSION: "100.5.1"
        POST_VERSION: "100.6.0.dev0"
+       # TODO: REMOVE THIS IN FAVOR OF GITHUB_REPOSITORY
        TARGET: "jupyter-server/jupyter_server"
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
@@ -99,5 +100,5 @@ jobs:
           -X DELETE \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
-          https://api.github.com/repos/jovyan123-playground/jupyter_server_playground/releases/${RELEASE_ID}
+          ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}
         
