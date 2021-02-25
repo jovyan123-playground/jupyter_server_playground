@@ -93,12 +93,12 @@ def main(args):
 
     # Create the annotated release tag
     tag_name = f'v{version}'
-    run('git tag {tag_name} -a -m "Release {tag_name}"')
+    run(f'git tag {tag_name} -a -m "Release {tag_name}"')
 
     # Bump to post version if given
     if post_version:
         run(f'{version_command} {post_version}')
-        run('git commit -a -m "Bump to {post_version}"')
+        run(f'git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
     diff = run(f'git --no-pager diff HEAD {orig_branch}')
@@ -120,7 +120,7 @@ def main(args):
     print("\n\n\n**********\n")
     print("Release Prep Complete!")
     print("Push to PyPI with \`twine upload dist/*\`")
-    print("Push changes with \`git push {remote} {branch} --tags\`")
+    print(f"Push changes with \`git push {remote} {branch} --tags\`")
     print("Make a GitHub release with the following output")
     print(output)
 
