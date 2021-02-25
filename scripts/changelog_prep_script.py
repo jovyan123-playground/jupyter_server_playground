@@ -26,6 +26,10 @@ parser.add_argument(
     default="upstream",
     help="""The git remote name.""",
 )
+parser.add_argument(
+    "--output", "-o",
+    help="""The output path to store the new change entry if needed.""",
+)
 
 
 def main():
@@ -37,6 +41,7 @@ def main():
     version_command = args.version_command
     postprocess_command = args.postprocess_command
     changelog = args.changelog
+    output_file = args.output
 
     full_branch = f"{remote}/{branch}"
 
@@ -68,6 +73,10 @@ def main():
     # New version entry in the previous commit
     diff = run(f'git --no-pager diff HEAD {full_branch}')
     assert "# {version}" in diff
+
+    if output:
+        with open(output, 'w') as fid:
+            fid.write(new_entry)
 
     # Follow up actions
     print("Changelog Prep Complete!")
