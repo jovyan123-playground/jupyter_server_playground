@@ -51,7 +51,8 @@ def main():
     remote = 'origin'
     orig_branch = branch
     if '/' in branch:
-        remote, branch = branch.split('/')[0]
+        parts = branch.split('/')
+        remote, branch = parts
 
     ## Bump the verison
     run(f'{version_command} {version_spec}')
