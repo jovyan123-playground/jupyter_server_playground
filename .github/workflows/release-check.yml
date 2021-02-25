@@ -59,7 +59,7 @@ jobs:
           ${TARGET} ${CHANGELOG} \
           --version ${VERSION} \
           --output ${CHANGELOG_OUTPUT} \
-          --branch ${BRANCH}
+          --branch upstream/${BRANCH}
         cat ${CHANGELOG_OUTPUT}
         # Store the new version
         echo "NEW_VERSION=$(python setup.py --version)" >> $GITHUB_ENV
@@ -80,7 +80,7 @@ jobs:
           --version ${VERSION} \
           --post-version ${POST_VERSION} \
           --output ${CHANGELOG_OUTPUT} \
-          --branch ${BRANCH}
+          --branch upstream/${BRANCH}
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:

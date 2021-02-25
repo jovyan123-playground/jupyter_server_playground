@@ -22,11 +22,6 @@ parser.add_argument(
     help="""The command to run to postprocess the changelog entry.""",
 )
 parser.add_argument(
-    "--remote", "-r",
-    default="upstream",
-    help="""The git remote name.""",
-)
-parser.add_argument(
     "--output", "-o",
     help="""The output path to store the new change entry if needed.""",
 )
@@ -36,14 +31,11 @@ def main():
     """Handle the creation of a new changelog entry"""
     args = parser.parse_args(sys.argv[1:])
     branch = args.branch
-    remote = args.remote 
     version_spec = args.version
     version_command = args.version_command
     postprocess_command = args.postprocess_command
     changelog = args.file
     output_file = args.output
-
-    full_branch = f"{remote}/{branch}"
 
     ## Bump the verison
     run(f'{version_command} {version_spec}')
@@ -71,7 +63,7 @@ def main():
     # Only one file committed in previous commit
     assert len(run('git diff --numstat HEAD~1 HEAD').splitlines()) == 1
     # New version entry in the previous commit
-    diff = run(f'git --no-pager diff HEAD {full_branch}')
+    diff = run(f'git --no-pager diff HEAD {branch}')
     assert "# {version}" in diff
 
     if output:

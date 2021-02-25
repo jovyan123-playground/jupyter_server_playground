@@ -16,11 +16,6 @@ from utils import run, get_version, get_name
 # Extend the finalize_changelog CLI
 parser.description = "Run the Release Prep Script"
 parser.add_argument(
-    "--remote", "-r",
-    default="upstream",
-    help="""The git remote name.""",
-)
-parser.add_argument(
     '--prerelease-command', '-pc',
     help="""The prelease command to run after bumping version"""
 )
@@ -39,7 +34,6 @@ def main():
     """Handle the creation of a new changelog entry"""
     args = parser.parse_args(sys.argv[1:])
     branch = args.branch
-    remote = args.remote 
     version_spec = args.version
     version_command = args.version_command
     prerelease_command = args.prerelease_command
@@ -49,7 +43,10 @@ def main():
 
     assert output_file is not None, 'Output file not given!'
 
-    full_branch = f"{remote}/{branch}"
+    remote = 'origin'
+    orig_branch = branch
+    if '/' in branch:
+        remote, branch = branch.split('/')[0]
 
     ## Bump the verison
     run(f'{version_command} {version_spec}')
@@ -99,7 +96,7 @@ def main():
         run('git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
-    diff = run(f'git --no-pager diff HEAD {full_branch}')
+    diff = run(f'git --no-pager diff HEAD {orig_branch}')
     assert version in diff
     if post_version:
         assert post_version in diff
