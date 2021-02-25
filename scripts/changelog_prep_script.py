@@ -51,7 +51,7 @@ def main(args):
 
     ## Commit the changelog
     run(f'git add {changelog}')
-    run('git commit -m "Prep changelog for {version}"')
+    run(f'git commit -m "Prep changelog for {version}"')
 
     ## Check out any files affected by the version bump
     run('git checkout .')
@@ -63,7 +63,7 @@ def main(args):
     assert len(run('git diff --numstat HEAD~1 HEAD').splitlines()) == 1
     # New version entry in the previous commit
     diff = run(f'git --no-pager diff HEAD {branch}')
-    assert "# {version}" in diff
+    assert f"# {version}" in diff
 
     if output_file:
         with open(output_file, 'w') as fid:
