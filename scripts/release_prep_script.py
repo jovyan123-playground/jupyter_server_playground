@@ -79,13 +79,13 @@ def main():
     run('twine check dist/*')
 
     # Test sdist in venv
-    run('virtualenv -p $(which python) test_sdist')
+    run('python -m venv ./test_sdist')
     fname = glob('dist/*.tar.gz')[0]
     run(f'./test_sdist/bin/pip install -q {fname}[test]')
     run(f'./test_sdist/bin/{test_command}')
 
     # Test wheel in venv
-    run('virtualenv -p $(which python) test_wheel')
+    run('python -m venv ./test_wheel')
     fname = glob('dist/*.whl')[0]
     run(f'./test_sdist/bin/pip install -q {fname}[test]')
     run(f'./test_sdist/bin/{test_command}')
