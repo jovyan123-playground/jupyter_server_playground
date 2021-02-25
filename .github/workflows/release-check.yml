@@ -117,6 +117,6 @@ jobs:
           -H "Authorization: token ${GITHUB_TOKEN}" \
           ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}
     - name: Push the commit(s) and tag(s) to the branch
-        run: |
-          echo "Can't push on the release check"
-          # git push upstream ${BRANCH} --tags
+      run: |
+        echo "Can't push on the release check"
+        # git push upstream ${BRANCH} --tags
