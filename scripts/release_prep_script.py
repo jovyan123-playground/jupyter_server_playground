@@ -21,7 +21,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '--test-command', '-tc',
-    default=f"pytest --pyargs {get_name()}"
+    default=f"pytest --pyargs {get_name()}",
     help="""The prelease command to run after bumping version"""
 )
 parser.add_argument(
@@ -125,3 +125,12 @@ if __name__ == "__main__":
 
 # TODO
 #- test the full workflow against the playground and the test pypi server
+# on: 
+#   workflow_dispatch:
+#     inputs:
+#       logLevel:
+#         description: 'Log level'     
+#         required: true
+#         default: 'warning'
+#       tags:
+#         description: 'Test scenario tags' 
