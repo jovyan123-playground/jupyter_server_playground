@@ -89,7 +89,7 @@ def main(args):
         run(f'{env_name}/bin/{test_command}')
 
     # Create the commit with shas
-    create_release_commit()
+    create_release_commit(version)
 
     # Create the annotated release tag
     run('git tag v{version} -a -m "Release v{version}"')
