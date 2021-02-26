@@ -4,6 +4,7 @@ import os
 import os.path as osp
 import re
 import shutil
+from subprocess import check_call
 import sys
 
 
@@ -69,11 +70,13 @@ def main(args):
     # Build and check the dist files
     shutil.rmtree('./dist', ignore_errors=True)
 
+    # Use check_call because setuptools messes with stdout when using 
+    # check_output
     if osp.exists('./pyproject.toml'):
-        run('python -m build .')
+        check_call('python -m build .'.split())
     else:
-        run('python setup.py sdist')
-        run('python setup.py bdist_wheel')
+        check_call('python setup.py sdist'.split())
+        check_call('python setup.py bdist_wheel'.split())
 
     run('twine check dist/*')
 

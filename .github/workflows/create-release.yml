@@ -77,8 +77,8 @@ jobs:
         cat ${GITHUB_ENV}
     - name: Push the commit(s) and tag(s) to the branch
       run: |
-
-        git push -u upstream ${BRANCH} --tags
+        git checkout -b ${BRANCH} upstream/${BRANCH}
+        git push upstream ${BRANCH} --tags
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
