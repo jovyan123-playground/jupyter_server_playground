@@ -37,6 +37,13 @@ parser.add_argument(
 )
 
 
+# TODO: scripts for:
+   # bump_version --version_spec --version-command
+   # finalize_changelog (done)
+   # prep_node - build, test, publish --dry-run, pack, node -e "require('.')", shasum  
+   # prep_python - build, test, shasum --test_command
+   # finish_release_prep - commit, tag, validate
+
 def main(args):
     """Handle the creation of a new changelog entry"""
     branch = args.branch
