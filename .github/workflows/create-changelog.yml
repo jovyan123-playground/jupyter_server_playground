@@ -1,4 +1,4 @@
-name: Jupyter Server Release Check
+name: Jupyter Server Changelog
 on: 
   workflow_dispatch:
     inputs:
