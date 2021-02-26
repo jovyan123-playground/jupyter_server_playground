@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 
 <!-- <START NEW CHANGELOG ENTRY> -->
+## 1.5.1
+
+([Full Changelog](https://github.com/jupyter-server/jupyter_server/compare/1.4.0...bf00ad0aa27f3dcf5c9ca7c75ba42583d3a82a35))
+
+- Correction in Changelog [#429](https://github.com/jupyter-server/jupyter_server/pull/429) ([@Zsailer](https://github.com/Zsailer))
+- Changelog for patch release: 1.4.1 [#426](https://github.com/jupyter-server/jupyter_server/pull/426) ([@Zsailer](https://github.com/Zsailer))
+- Update README.md [#425](https://github.com/jupyter-server/jupyter_server/pull/425) ([@BobinMathew](https://github.com/BobinMathew))
+- Solve UnboundLocalError in launch_browser() [#421](https://github.com/jupyter-server/jupyter_server/pull/421) ([@jamesmishra](https://github.com/jamesmishra))
+- Add file_to_run to server extension docs [#420](https://github.com/jupyter-server/jupyter_server/pull/420) ([@Zsailer](https://github.com/Zsailer))
+- Remove outdated reference to _jupyter_server_extension_paths in docs [#419](https://github.com/jupyter-server/jupyter_server/pull/419) ([@Zsailer](https://github.com/Zsailer))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter-server/jupyter_server/graphs/contributors?from=2021-02-18&to=2021-02-26&type=c))
+
+[@BobinMathew](https://github.com/search?q=repo%3Ajupyter-server%2Fjupyter_server+involves%3ABobinMathew+updated%3A2021-02-18..2021-02-26&type=Issues) | [@codecov-io](https://github.com/search?q=repo%3Ajupyter-server%2Fjupyter_server+involves%3Acodecov-io+updated%3A2021-02-18..2021-02-26&type=Issues) | [@jamesmishra](https://github.com/search?q=repo%3Ajupyter-server%2Fjupyter_server+involves%3Ajamesmishra+updated%3A2021-02-18..2021-02-26&type=Issues) | [@Zsailer](https://github.com/search?q=repo%3Ajupyter-server%2Fjupyter_server+involves%3AZsailer+updated%3A2021-02-18..2021-02-26&type=Issues)
 <!-- <END NEW CHANGELOG ENTRY> -->
 
 ## [1.4.0](https://github.com/jupyter-server/jupyter_server/tree/1.4.0) (2021-02-18)
