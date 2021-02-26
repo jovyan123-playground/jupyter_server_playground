@@ -45,8 +45,6 @@ jobs:
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
     - name: Prep Git
-      env:
-        BRANCH: "master"
       run: |
         python scripts/git_prep_script.py \
           ${GITHUB_REPOSITORY} ${BRANCH}
