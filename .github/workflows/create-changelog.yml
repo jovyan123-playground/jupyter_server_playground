@@ -5,6 +5,8 @@ on:
       version:
         description: 'New Version'     
         required: true
+      branch:
+        description: 'Target branch'
 jobs:
   changelog:
     runs-on: ${{ matrix.os }}-latest
@@ -14,6 +16,7 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
+       BRANCH: ${{ github.event.inputs.branch }}
        VERSION: ${{ github.event.inputs.version }}
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
@@ -40,9 +43,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
-    - name: Extract Branch from GITHUB_REF
-      run:
-        echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
     - name: Prep Git
       run: |
         python scripts/git_prep_script.py \
@@ -64,7 +64,7 @@ jobs:
     - name: Make a PR with the changelog entry change
       uses: peter-evans/create-pull-request@v3
       with:
-        title: "Automated Changelog for ${NEW_VERSION} on ${BRANCH}"
+        title: "Automated Changelog for ${{ env.NEW_VERSION }} on ${{ env.BRANCH }}"
         branch-suffix: timestamp
         delete-branch: true
         base: ${{ env.BRANCH }}
