@@ -40,12 +40,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
-    - name: Get Branch from GITHUB_REF
+    - name: Get Branch from environment
       run: |
-        echo ${GITHUB_REF}
-        echo ${GITHUB_BASE_REF}
-        echo ${GITHUB_HEAD_REF}
-        echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
+        # Release check needs to run in both PR and Push
+        if [[ -z ${GITHUB_BASE_REF} ]]; then
+          # e.g. refs/heads/feature-branch-1 -> extract the last portion
+          echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
+        else
+          echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
+        fi
     - name: Prep Git
       run: |
         python scripts/git_prep_script.py \

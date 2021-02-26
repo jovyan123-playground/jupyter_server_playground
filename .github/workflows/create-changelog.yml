@@ -40,7 +40,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
-    - name: Get Branch from GITHUB_REF
+    - name: Get Branch from environment
       run: |
         echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
     - name: Prep Git
