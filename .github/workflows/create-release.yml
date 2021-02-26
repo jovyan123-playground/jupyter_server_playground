@@ -1,11 +1,14 @@
-name: Jupyter Server Release Check
-on:
-  push:
-    branches: '*'
-  pull_request:
-    branches: '*'
+name: Jupyter Server Release Script
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New Version'     
+        required: true
+      post_version:
+        description: 'Post Version'     
 jobs:
-  release_check:
+  release:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: true
@@ -13,8 +16,8 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
-       VERSION: "100.5.1"
-       POST_VERSION: "100.6.0.dev0"
+       VERSION: ${{ github.event.inputs.version }}
+       POST_VERSION: ${{ github.event.inputs.post_version }}
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
     steps:
@@ -49,27 +52,6 @@ jobs:
           ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Install Dependencies
       run: pip install -e .[publishing]
-    - name: Run the changelog prep      
-      env:
-        GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        python scripts/changelog_prep_script.py \
-          ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --version ${VERSION} \
-          --output ${CHANGELOG_OUTPUT} \
-          --branch upstream/${BRANCH}
-        cat ${CHANGELOG_OUTPUT}
-        # Store the new version
-        echo "NEW_VERSION=$(python setup.py --version)" >> $GITHUB_ENV
-    - name: Make a PR with the changelog entry change
-      run: |
-        echo "Can't make a PR on the release check"
-        # uses: peter-evans/create-pull-request@v3
-        # title="Automated Changelog for ${NEW_VERSION} on ${BRANCH}"
-        # branch-suffix=timestamp
-        # delete-branch=true
-        # base=${BRANCH}
-        # body="Automated Changelog for ${NEW_VERSION} on ${BRANCH} using version specifier ${VERSION}"
     - name: Run the release prep      
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -93,9 +75,7 @@ jobs:
         echo "FINAL_VERSION=$(echo ${VERSION} | egrep "[0-9]+\.[0-9]+\.[0-9]+")" >> $GITHUB_ENV
     - name: Push the commit(s) and tag(s) to the branch
       run: |
-        echo "Can't push on the release check"
-        # needs GITHUB_TOKEN in final version
-        # git push upstream ${BRANCH} --tags
+        git push upstream ${BRANCH} --tags
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -106,16 +86,3 @@ jobs:
         release_name: Release v${{ env.VERSION }}
         body_path: ${{ env.CHANGELOG_OUTPUT }}
         prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
-        draft: true
-    - name: Delete Draft Release
-      env:
-        RELEASE_ID: ${{ steps.create_release.outputs.id }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        HTML_URL: ${{ steps.create_release.outputs.html_url}}
-      run: |
-        echo "For release check we don't want to leave a draft release open"
-        curl \
-          -X DELETE \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}
