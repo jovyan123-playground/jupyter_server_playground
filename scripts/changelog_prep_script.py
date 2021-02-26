@@ -54,7 +54,7 @@ def main(args):
 
     ## Verify the change for the PR
     # Only one uncommitted file
-    assert len(run('git diff --numstat')).splitlines() == 1
+    assert len(run('git diff --numstat').splitlines()) == 1
     # New version entry in the diff
     diff = run(f'git --no-pager diff')
     assert f"# {version}" in diff
