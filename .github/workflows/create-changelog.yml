@@ -19,7 +19,6 @@ jobs:
     env:
        BRANCH: ${{ github.event.inputs.branch }}
        VERSION: ${{ github.event.inputs.version }}
-       TARGET: ${{ env.GITHUB_REPOSITORY }}
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
     steps:
@@ -50,7 +49,7 @@ jobs:
         BRANCH: "master"
       run: |
         python scripts/git_prep_script.py \
-          ${TARGET} ${BRANCH}
+          ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Install Dependencies
       run: pip install -e .[publishing]
     - name: Run the changelog prep      
@@ -58,7 +57,7 @@ jobs:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         python scripts/changelog_prep_script.py \
-          ${TARGET} ${CHANGELOG} \
+          ${GITHUB_REPOSITORY} ${CHANGELOG} \
           --version ${VERSION} \
           --output ${CHANGELOG_OUTPUT} \
           --branch upstream/${BRANCH}
