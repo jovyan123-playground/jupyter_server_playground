@@ -42,6 +42,9 @@ def main(args):
     # Get the new version
     version = get_version()
 
+    ## Check out any files affected by the version bump
+    run('git checkout .')
+
     ## Prepare the changelog
     new_entry = prepare_changelog(args)
 
@@ -49,20 +52,11 @@ def main(args):
     if postprocess_command:
         run(postprocess_command)
 
-    ## Commit the changelog
-    run(f'git add {changelog}')
-    run(f'git commit -m "Prep changelog for {version}"')
-
-    ## Check out any files affected by the version bump
-    run('git checkout .')
-
     ## Verify the change for the PR
-    # No uncommitted files
-    assert not run('git diff --numstat') 
-    # Only one file committed in previous commit
-    assert len(run('git diff --numstat HEAD~1 HEAD').splitlines()) == 1
-    # New version entry in the previous commit
-    diff = run(f'git --no-pager diff HEAD {branch}')
+    # Only one uncommitted file
+    assert len(run('git diff --numstat')).splitlines() == 1
+    # New version entry in the diff
+    diff = run(f'git --no-pager diff')
     assert f"# {version}" in diff
 
     if output_file:
