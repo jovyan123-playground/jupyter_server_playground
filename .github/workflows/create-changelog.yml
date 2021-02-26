@@ -60,6 +60,7 @@ jobs:
           --output ${CHANGELOG_OUTPUT} \
           --branch upstream/${BRANCH}
         cat ${CHANGELOG_OUTPUT}
+        rm ${CHANGELOG_OUTPUT}
     - name: Make a PR with the changelog entry change
       uses: peter-evans/create-pull-request@v3
       with:
