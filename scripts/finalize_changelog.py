@@ -90,12 +90,18 @@ def main(args):
 
     new_prs = re.findall('\[#(\d+)\]', new_entry)
     orig_prs = re.findall('\[#(\d+)\]', orig_entry)
+
     for pr in orig_prs:
         # Allow for the changelog PR to not be in the changelog itself
-        if 'changelog' in pr.lower():
+        skip = False
+        for line in orig_entry:
+            if f'[#{pr}]' in line and 'changelog' in line.lower():
+                skip = True
+                break
+        if skip:
             continue
         if not f'[#{pr}]' in new_entry:
-            raise ValueError(f'Missing PR #{pr} in the changelog')
+            raise ValueError(f'Missing PR #{pr} in the changelog', pr)
     for pr in new_prs:
         if not f'[#{pr}]' in orig_entry:
             raise ValueError(f'PR #{pr} does not belong in the changelog for {version}')
