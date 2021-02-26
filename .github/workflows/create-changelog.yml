@@ -9,7 +9,7 @@ on:
         description: 'Target branch'
         required: true
 jobs:
-  build:
+  changelog:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: true

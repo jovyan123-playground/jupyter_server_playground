@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: '*'
 jobs:
-  build:
+  release_check:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: true
