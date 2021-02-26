@@ -1,4 +1,5 @@
 import argparse
+from glob import glob
 import hashlib
 import os
 import os.path as osp
@@ -9,6 +10,7 @@ sys.path.insert(0, HERE)
 from utils import get_version, run
 
 BUF_SIZE = 65536
+DEFAULT_GLOB = "dist/*"
 
 DESCRIPTION = "Generate a git commit for a release."
 parser = argparse.ArgumentParser(description=DESCRIPTION)
@@ -17,22 +19,26 @@ parser.add_argument(
     default=get_version(),
     help="""The new version.""",
 )
+parser.add_argument(
+    "--glob", "-g",
+    default=DEFAULT_GLOB,
+    help="""The glob pattern of file(s) report hashes on.""",
+)
 
-def main(version):
+
+def main(version, glob_pattern="dist/*"):
     """Generate a release commit that has the sha256 digests for the release files.
     """
     cmd = f'git commit -am "Publish v{version}" -m "SHA256 hashes:"'
-    files = os.listdir('dist')
+    files = glob(glob_pattern)
     if not len(files) == 2:
         raise ValueError('Missing distribution files')
 
-    for fname in files:
-        if not str(version) in fname:
-            raise ValueError(f'Version {version} not found in {fname}')
+    for path in files:
 
         sha256 = hashlib.sha256()
 
-        with open(os.path.join('dist', fname), 'rb') as f:
+        with open(fname, 'rb') as f:
             while True:
                 data = f.read(BUF_SIZE)
                 if not data:
@@ -48,4 +54,4 @@ def main(version):
 
 if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
-    main(args.version)
+    main(args.version, glob_pattern=args.glob)

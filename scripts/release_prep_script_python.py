@@ -18,7 +18,7 @@ parser.description = "Run the Release Prep Script"
 parser.add_argument(
     "--version-command", "-vc",
     default="tbump --non-interactive --only-patch",
-    help="""The version command to run.""",
+    help="""The version command to run""",
 )
 parser.add_argument(
     '--prerelease-command', '-pc',
@@ -27,7 +27,7 @@ parser.add_argument(
 parser.add_argument(
     '--test-command', '-tc',
     default=f"pytest --pyargs {get_name()}",
-    help="""The prelease command to run after bumping version"""
+    help="""The test command to run.  The command is run in a venv"""
 )
 parser.add_argument(
     '--post-version', '-pv',
