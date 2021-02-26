@@ -5,8 +5,6 @@ on:
       version:
         description: 'New Version'     
         required: true
-      branch:
-        description: 'Target branch'
 jobs:
   changelog:
     runs-on: ${{ matrix.os }}-latest
@@ -16,7 +14,6 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
-       BRANCH: ${{ github.event.inputs.branch }}
        VERSION: ${{ github.event.inputs.version }}
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
@@ -43,6 +40,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
+    - name: Get Branch from GITHUB_REF
+        echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
     - name: Prep Git
       run: |
         python scripts/git_prep_script.py \
