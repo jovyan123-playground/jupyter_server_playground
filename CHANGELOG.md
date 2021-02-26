@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 <!-- <START NEW CHANGELOG ENTRY> -->
+## 1.5.3
+## Merged PRs
+None!
 <!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 1.5.2
