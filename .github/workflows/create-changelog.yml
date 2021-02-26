@@ -16,7 +16,6 @@ jobs:
     env:
        VERSION: ${{ github.event.inputs.version }}
        CHANGELOG: "CHANGELOG.md"
-       CHANGELOG_OUTPUT: "changelog_entry.md"
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -57,10 +56,8 @@ jobs:
         python scripts/changelog_prep_script.py \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
           --version ${VERSION} \
-          --output ${CHANGELOG_OUTPUT} \
           --branch upstream/${BRANCH}
-        cat ${CHANGELOG_OUTPUT}
-        rm ${CHANGELOG_OUTPUT}
+        git diff
     - name: Make a PR with the changelog entry change
       uses: peter-evans/create-pull-request@v3
       with:
@@ -68,4 +65,5 @@ jobs:
         branch-suffix: timestamp
         delete-branch: true
         base: ${{ env.BRANCH }}
+        commit-message: "Generate changelog for ${{ env.VERSION }}"
         body: "Automated Changelog for ${{ env.VERSION }} on ${{ env.BRANCH }}"
