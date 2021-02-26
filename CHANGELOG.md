@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 <!-- <START NEW CHANGELOG ENTRY> -->
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 1.5.2
 
 ([Full Changelog](https://github.com/jovyan123-playground/jupyter_server_playground/compare/1.4.0...c94c42fbbab954c1d10bd5427e989211e36cfc71))
@@ -18,7 +20,7 @@ All notable changes to this project will be documented in this file.
 ([GitHub contributors page for this release](https://github.com/jovyan123-playground/jupyter_server_playground/graphs/contributors?from=2021-02-18&to=2021-02-26&type=c))
 
 [@github-actions](https://github.com/search?q=repo%3Ajovyan123-playground%2Fjupyter_server_playground+involves%3Agithub-actions+updated%3A2021-02-18..2021-02-26&type=Issues) | [@jovyan123-playground](https://github.com/search?q=repo%3Ajovyan123-playground%2Fjupyter_server_playground+involves%3Ajovyan123-playground+updated%3A2021-02-18..2021-02-26&type=Issues)
-<!-- <END NEW CHANGELOG ENTRY> -->
+
 
 ## [1.4.0](https://github.com/jupyter-server/jupyter_server/tree/1.4.0) (2021-02-18)
 
