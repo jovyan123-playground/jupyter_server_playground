@@ -7,7 +7,7 @@ on:
         required: true
       branch:
         description: 'Target branch'
-        required: true
+        default: ${{ github.event.ref }}
 jobs:
   changelog:
     runs-on: ${{ matrix.os }}-latest
