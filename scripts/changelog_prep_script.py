@@ -24,7 +24,6 @@ def main(args):
     branch = args.branch
     version_spec = args.version
     version_command = args.version_command
-    postprocess_command = args.postprocess_command
     changelog = args.file
 
     ## Bump the verison
