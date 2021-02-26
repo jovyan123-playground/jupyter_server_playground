@@ -41,6 +41,7 @@ jobs:
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
     - name: Get Branch from GITHUB_REF
+      run: |
         echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
     - name: Prep Git
       run: |
