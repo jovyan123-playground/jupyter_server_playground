@@ -4,7 +4,6 @@ import os
 import os.path as osp
 import re
 import shutil
-from subprocess import check_call
 import sys
 
 
@@ -70,26 +69,24 @@ def main(args):
     # Build and check the dist files
     shutil.rmtree('./dist', ignore_errors=True)
 
-    # Use check_call because setuptools messes with stdout when using 
-    # check_output
     if osp.exists('./pyproject.toml'):
-        check_call('python -m build .'.split())
+        run('python -m build .')
     else:
-        check_call('python setup.py sdist'.split())
-        check_call('python setup.py bdist_wheel'.split())
+        run('python setup.py sdist')
+        run('python setup.py bdist_wheel')
 
     run('twine check dist/*')
 
     # Test sdist and wheel in venv
-    for asset in ['gz', 'whl']:
-        env_name = f"./test_{asset}"
-        fname = glob(f'dist/*.{asset}')[0]
-        # Create the virtual environment, upgrade pip,
-        # install test requirements, and run test
-        run(f'python -m venv {env_name}')
-        run(f'{env_name}/bin/python -m pip install -U -q pip')
-        run(f'{env_name}/bin/pip install -q {fname}[test]')
-        run(f'{env_name}/bin/{test_command}')
+    # for asset in ['gz', 'whl']:
+    #     env_name = f"./test_{asset}"
+    #     fname = glob(f'dist/*.{asset}')[0]
+    #     # Create the virtual environment, upgrade pip,
+    #     # install test requirements, and run test
+    #     run(f'python -m venv {env_name}')
+    #     run(f'{env_name}/bin/python -m pip install -U -q pip')
+    #     run(f'{env_name}/bin/pip install -q {fname}[test]')
+    #     run(f'{env_name}/bin/{test_command}')
 
     # Create the commit with shas
     create_release_commit(version)
