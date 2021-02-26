@@ -81,34 +81,34 @@ def main(args):
     if start != changelog.rfind(START_MARKER):
         raise ValueError('Insert marker appears more than once in changelog')
 
-    new_entry = changelog[start + len(START_MARKER): end]
+    final_entry = changelog[start + len(START_MARKER): end]
 
-    orig_entry = get_changelog_entry(target, branch, version, auth=auth, resolve_backports=resolve_backports)
+    raw_entry = get_changelog_entry(target, branch, version, auth=auth, resolve_backports=resolve_backports)
 
-    if f'# {version}' not in new_entry:
+    if f'# {version}' not in final_entry:
         raise ValueError(f'Did not find entry for {version}')
 
-    new_prs = re.findall('\[#(\d+)\]', new_entry)
-    orig_prs = re.findall('\[#(\d+)\]', orig_entry)
+    final_prs = re.findall('\[#(\d+)\]', final_entry)
+    raw_prs = re.findall('\[#(\d+)\]', raw_entry)
 
-    for pr in orig_prs:
+    for pr in raw_prs:
         # Allow for the changelog PR to not be in the changelog itself
         skip = False
-        for line in orig_entry:
+        for line in raw_entry:
             if f'[#{pr}]' in line and 'changelog' in line.lower():
                 skip = True
                 break
         if skip:
             continue
-        if not f'[#{pr}]' in new_entry:
-            raise ValueError(f'Missing PR #{pr} in the changelog', pr)
-    for pr in new_prs:
-        if not f'[#{pr}]' in orig_entry:
+        if not f'[#{pr}]' in final_entry:
+            raise ValueError(f'Missing PR #{pr} in the changelog')
+    for pr in final_prs:
+        if not f'[#{pr}]' in raw_entry:
             raise ValueError(f'PR #{pr} does not belong in the changelog for {version}')
     
     if output:
         with open(output, 'w') as fid:
-            fid.write(new_entry)
+            fid.write(final_entry)
 
     # Clear out the insertion markers
     changelog = changelog.replace(END_MARKER, '')
