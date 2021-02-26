@@ -38,7 +38,7 @@ def main(version, glob_pattern="dist/*"):
 
         sha256 = hashlib.sha256()
 
-        with open(fname, 'rb') as f:
+        with open(path, 'rb') as f:
             while True:
                 data = f.read(BUF_SIZE)
                 if not data:
@@ -46,8 +46,8 @@ def main(version, glob_pattern="dist/*"):
                 sha256.update(data)
 
         sha256 = sha256.hexdigest()
-        print(fname, sha256)
-        cmd += f' -m "{fname}: {sha256}"'
+        print(path, sha256)
+        cmd += f' -m "{path}: {sha256}"'
 
     run(cmd)
 
