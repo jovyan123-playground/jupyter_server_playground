@@ -16,8 +16,7 @@ jobs:
        BRANCH: "master"
        VERSION: "100.5.1"
        POST_VERSION: "100.6.0.dev0"
-       # TODO: REMOVE THIS IN FAVOR OF GITHUB_REPOSITORY env
-       TARGET: "jupyter-server/jupyter_server"
+       TARGET: ${{ env.GITHUB_REPOSITORY }}
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
     steps:
@@ -48,7 +47,7 @@ jobs:
         BRANCH: "master"
       run: |
         python scripts/git_prep_script.py \
-          jupyter-server/jupyter_server ${BRANCH}
+          ${TARGET} ${BRANCH}
     - name: Install Dependencies
       run: pip install -e .[publishing]
     - name: Run the changelog prep      
