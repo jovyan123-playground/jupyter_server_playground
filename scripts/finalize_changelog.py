@@ -95,6 +95,7 @@ def main(args):
         # Allow for the changelog PR to not be in the changelog itself
         skip = False
         for line in raw_entry:
+            print(line)
             if f'[#{pr}]' in line and 'changelog' in line.lower():
                 skip = True
                 break
