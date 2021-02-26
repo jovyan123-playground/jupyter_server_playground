@@ -75,10 +75,11 @@ jobs:
       run: |
         echo "FINAL_VERSION=$(echo ${VERSION} | egrep "[0-9]+\.[0-9]+\.[0-9]+")" >> $GITHUB_ENV
         cat ${GITHUB_ENV}
-    - name: Push the commit(s) and tag(s) to the branch
-      run: |
-        git checkout -b ${BRANCH} HEAD
-        git push -u upstream ${BRANCH} --tags
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ env.BRANCH }}
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
