@@ -1,8 +1,10 @@
+import json
 import os.path as osp
 import shlex
 from subprocess import check_output
 
 HERE = osp.abspath(osp.dirname(__file__))
+
 
 def run(cmd, **kwargs):
     """Run a command as a subprocess and get the output as a string"""
@@ -19,10 +21,18 @@ def get_branch():
 def get_version():
     """Get the current package version"""
     parent = osp.abspath(osp.join(HERE, '..'))
-    return run('python setup.py --version', cwd=parent, quiet=True)
+    if osp.exists(osp.join(parent, 'setup.py')):
+        return run('python setup.py --version', cwd=parent, quiet=True)
+    elif osp.exists(osp.join(parent, 'package.json')):
+        with open(osp.join(parent, 'package.json')) as fid:
+            return json.load(fid)['version']
 
 
 def get_name():
     """Get the package name"""
     parent = osp.abspath(osp.join(HERE, '..'))
-    return run('python setup.py --name', cwd=parent, quiet=True)
+    if osp.exists(osp.join(parent, 'setup.py')):
+        return run('python setup.py --name', cwd=parent, quiet=True)
+    elif osp.exists(osp.join(parent, 'package.json')):
+        with open(osp.join(parent, 'package.json')) as fid:
+            return json.load(fid)['name']
