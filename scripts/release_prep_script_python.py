@@ -133,12 +133,3 @@ if __name__ == "__main__":
 #- test the full workflow against the playground and the test pypi server
 #- refactor out the actions into changelog_core, release_core, release_test, changelog, and release
 #  to save duplication
-# on: 
-#   workflow_dispatch:
-#     inputs:
-#       logLevel:
-#         description: 'Log level'     
-#         required: true
-#         default: 'warning'
-#       tags:
-#         description: 'Test scenario tags' 
