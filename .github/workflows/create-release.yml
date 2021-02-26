@@ -1,0 +1,88 @@
+name: Jupyter Server Release Script
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New Version'     
+        required: true
+      post_version:
+        description: 'Post Version'     
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu]
+        python-version: ['3.9']
+    env:
+       VERSION: ${{ github.event.inputs.version }}
+       POST_VERSION: ${{ github.event.inputs.post_version }}
+       CHANGELOG: "CHANGELOG.md"
+       CHANGELOG_OUTPUT: "changelog_entry.md"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Install Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: 'x64'
+    - name: Upgrade packaging dependencies
+      run: |
+        pip install --upgrade pip setuptools wheel --user
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+    - name: Cache pip
+      uses: actions/cache@v1
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+    - name: Get Branch from GITHUB_REF
+      run: |
+        echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
+    - name: Prep Git
+      run: |
+        python scripts/git_prep_script.py \
+          ${GITHUB_REPOSITORY} ${BRANCH}
+    - name: Install Dependencies
+      run: pip install -e .[publishing]
+    - name: Run the release prep      
+      env:
+        GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python scripts/release_prep_script_python.py \
+          ${GITHUB_REPOSITORY} ${CHANGELOG} \
+          --version ${VERSION} \
+          --post-version ${POST_VERSION} \
+          --output ${CHANGELOG_OUTPUT} \
+          --branch upstream/${BRANCH}
+        cat ${CHANGELOG_OUTPUT}
+    - name: Publish PyPI Package
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+        REGISTRY: https://test.pypi.org/legacy/
+      run: |
+        twine upload --repository-url ${REGISTRY} --skip-existing dist/*
+    - name: Extract Final Version
+      run: |
+        echo "FINAL_VERSION=$(echo ${VERSION} | egrep "[0-9]+\.[0-9]+\.[0-9]+")" >> $GITHUB_ENV
+    - name: Push the commit(s) and tag(s) to the branch
+      run: |
+        git push upstream ${BRANCH} --tags
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ env.VERSION }}
+        release_name: Release v${{ env.VERSION }}
+        body_path: ${{ env.CHANGELOG_OUTPUT }}
+        prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
