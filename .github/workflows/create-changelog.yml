@@ -43,6 +43,7 @@ jobs:
     - name: Get Branch from environment
       run: |
         echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
+        cat ${GITHUB_ENV}
     - name: Prep Git
       run: |
         python scripts/git_prep_script.py \

@@ -49,6 +49,7 @@ jobs:
         else
           echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
         fi
+        cat ${GITHUB_ENV}
     - name: Prep Git
       run: |
         python scripts/git_prep_script.py \
@@ -97,6 +98,7 @@ jobs:
     - name: Extract Final Version
       run: |
         echo "FINAL_VERSION=$(echo ${VERSION} | egrep "[0-9]+\.[0-9]+\.[0-9]+")" >> $GITHUB_ENV
+        cat ${GITHUB_ENV}
     - name: Push the commit(s) and tag(s) to the branch
       run: |
         echo "Can't push on the release check"
