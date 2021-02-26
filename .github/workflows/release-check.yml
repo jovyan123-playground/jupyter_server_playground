@@ -13,7 +13,6 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
-       BRANCH: "master"
        VERSION: "100.5.1"
        POST_VERSION: "100.6.0.dev0"
        CHANGELOG: "CHANGELOG.md"
@@ -41,9 +40,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
+    - name: Get Branch from GITHUB_REF
+      run: |
+        echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
     - name: Prep Git
-      env:
-        BRANCH: "master"
       run: |
         python scripts/git_prep_script.py \
           ${GITHUB_REPOSITORY} ${BRANCH}
@@ -91,6 +91,11 @@ jobs:
     - name: Extract Final Version
       run: |
         echo "FINAL_VERSION=$(echo ${VERSION} | egrep "[0-9]+\.[0-9]+\.[0-9]+")" >> $GITHUB_ENV
+    - name: Push the commit(s) and tag(s) to the branch
+      run: |
+        echo "Can't push on the release check"
+        # needs GITHUB_TOKEN in final version
+        # git push upstream ${BRANCH} --tags
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -114,8 +119,3 @@ jobs:
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}
-    - name: Push the commit(s) and tag(s) to the branch
-      run: |
-        echo "Can't push on the release check"
-        # needs GITHUB_TOKEN in final version
-        # git push upstream ${BRANCH} --tags
