@@ -14,7 +14,6 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
-       BRANCH: ${{ github.event.ref }}
        VERSION: ${{ github.event.inputs.version }}
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
@@ -41,6 +40,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
+    - name: Extract Branch from GITHUB_REF
+      run:
+        echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
     - name: Prep Git
       run: |
         python scripts/git_prep_script.py \
