@@ -58,13 +58,11 @@ jobs:
           --output ${CHANGELOG_OUTPUT} \
           --branch upstream/${BRANCH}
         cat ${CHANGELOG_OUTPUT}
-        # Store the new version
-        echo "NEW_VERSION=$(python setup.py --version)" >> $GITHUB_ENV
     - name: Make a PR with the changelog entry change
       uses: peter-evans/create-pull-request@v3
       with:
-        title: "Automated Changelog for ${{ env.NEW_VERSION }} on ${{ env.BRANCH }}"
+        title: "Automated Changelog for ${{ env.VERSION }} on ${{ env.BRANCH }}"
         branch-suffix: timestamp
         delete-branch: true
         base: ${{ env.BRANCH }}
-        body: "Automated Changelog for ${{ env.NEW_VERSION }} on ${{ env.BRANCH }} using version specifier ${{ env.VERSION }}"
+        body: "Automated Changelog for ${{ env.VERSION }} on ${{ env.BRANCH }}"
