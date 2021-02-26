@@ -65,11 +65,10 @@ jobs:
         # Store the new version
         echo "NEW_VERSION=$(python setup.py --version)" >> $GITHUB_ENV
     - name: Make a PR with the changelog entry change
-      run: |
-        echo "Can't make a PR on the release check"
-        # uses: peter-evans/create-pull-request@v3
-        # title="Automated Changelog for ${NEW_VERSION} on ${BRANCH}"
-        # branch-suffix=timestamp
-        # delete-branch=true
-        # base=${BRANCH}
-        # body="Automated Changelog for ${NEW_VERSION} on ${BRANCH} using version specifier ${VERSION}"
+      uses: peter-evans/create-pull-request@v3
+      with:
+        title: "Automated Changelog for ${NEW_VERSION} on ${BRANCH}"
+        branch-suffix: timestamp
+        delete-branch: true
+        base: ${{ env.BRANCH }}
+        body: "Automated Changelog for ${{ env.NEW_VERSION }} on ${{ env.BRANCH }} using version specifier ${{ env.VERSION }}"
