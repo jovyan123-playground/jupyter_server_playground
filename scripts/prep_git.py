@@ -11,7 +11,7 @@ sys.path.insert(0, HERE)
 from utils import run
 
 
-DESCRIPTION = "Finalize the changelog for the new release."
+DESCRIPTION = "Set up git config for workflow"
 parser = argparse.ArgumentParser(description=DESCRIPTION)
 parser.add_argument(
     "repository",

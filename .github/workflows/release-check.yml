@@ -55,30 +55,34 @@ jobs:
         python scripts/git_prep_script.py \
           ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Install Dependencies
-      run: pip install -e .[publishing]
-    - name: Run the changelog prep      
+      run: |
+        pip install -e .[publishing,test]
+    - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        python scripts/bump_version.py ${VERSION}
         python scripts/changelog_prep_script.py \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --version ${VERSION} \
           --branch upstream/${BRANCH}
         git diff
     - name: Make a PR with the changelog entry change
       run: |
         echo "Can't make a PR on the release check"
         git commit -a -m "Commit Changelog"
-    - name: Run the release prep      
+    - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        python scripts/release_prep_script_python.py \
+        python scripts/bump_version.py ${VERSION}
+        python scripts/finalize_changelog.py \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --version ${VERSION} \
-          --post-version ${POST_VERSION} \
-          --output ${CHANGELOG_OUTPUT} \
           --branch upstream/${BRANCH}
+          --output ${CHANGELOG_OUTPUT} \
+        python scripts/prep_python_release.py
+        python scripts/finalize_release_prep.py \
+          --branch upstream/${BRANCH}
+          --post-version ${POST_VERSION}
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:

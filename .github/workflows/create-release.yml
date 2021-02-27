@@ -1,12 +1,12 @@
 name: Jupyter Server Release Script
-on: 
+on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'New Version'     
+        description: 'New Version'
         required: true
       post_version:
-        description: 'Post Version'     
+        description: 'Post Version'
 jobs:
   release:
     runs-on: ${{ matrix.os }}-latest
@@ -52,17 +52,21 @@ jobs:
         python scripts/git_prep_script.py \
           ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Install Dependencies
-      run: pip install -e .[publishing]
-    - name: Run the release prep      
+      run: |
+        pip install -e .[publishing,test]
+    - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        python scripts/release_prep_script_python.py \
+        python scripts/bump_version.py ${VERSION}
+        python scripts/finalize_changelog.py \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --version ${VERSION} \
-          --post-version ${POST_VERSION} \
-          --output ${CHANGELOG_OUTPUT} \
           --branch upstream/${BRANCH}
+          --output ${CHANGELOG_OUTPUT} \
+        python scripts/prep_python_release.py
+        python scripts/finalize_release_prep.py \
+          --branch upstream/${BRANCH}
+          --post-version ${POST_VERSION}
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:

@@ -7,27 +7,17 @@ import sys
 
 HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, HERE)
-from prepare_changelog import parser, main as prepare_changelog
+from prep_changelog import parser, main as prep_changelog
 from utils import run, get_version
 
-# Extend the prepare_changelog CLI
+# Extend the prep_changelog CLI
 parser.description = "Run the Changelog Prep Script"
-parser.add_argument(
-    "--version-command", "-vc",
-    default="tbump --non-interactive --only-patch",
-    help="""The version command to run.""",
-)
 
 
 def main(args):
     """Handle the creation of a new changelog entry"""
     branch = args.branch
-    version_spec = args.version
-    version_command = args.version_command
     changelog = args.file
-
-    ## Bump the verison
-    run(f'{version_command} {version_spec}')
 
     # Get the new version
     version = get_version()
@@ -36,7 +26,7 @@ def main(args):
     run('git checkout .')
 
     ## Prepare the changelog
-    prepare_changelog(args)
+    prep_changelog(args)
 
     ## Verify the change for the PR
     # Only one uncommitted file

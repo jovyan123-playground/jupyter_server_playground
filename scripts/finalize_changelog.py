@@ -7,7 +7,9 @@ import sys
 
 HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, HERE)
-from prepare_changelog import get_changelog_entry, START_MARKER, END_MARKER
+from prep_changelog import (
+    get_changelog_entry, START_MARKER, END_MARKER
+)
 from utils import get_branch, get_version
 
 DESCRIPTION = "Finalize the changelog for the new release."
@@ -53,10 +55,10 @@ parser.add_argument(
 
 def main(args):
     """Finalizes the changelog for the release.
-    
-    - Runs a changelog verification on the new entry.  
-      - Finds the entry for the version using the delimiter. 
-      - Makes sure all of the relevant PRs are in there by PR number 
+
+    - Runs a changelog verification on the new entry.
+      - Finds the entry for the version using the delimiter.
+      - Makes sure all of the relevant PRs are in there by PR number
       (titles might have been edited).
     - Optionally writes the changelog entry out to a file.
     - Updates the comment markers and overwrites changelog.
@@ -105,7 +107,7 @@ def main(args):
     for pr in final_prs:
         if not f'[#{pr}]' in raw_entry:
             raise ValueError(f'PR #{pr} does not belong in the changelog for {version}')
-    
+
     if output:
         with open(output, 'w') as fid:
             fid.write(final_entry)
@@ -117,7 +119,7 @@ def main(args):
 
     with open(path, 'w') as fid:
         fid.write(changelog)
-    
+
 
 if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])

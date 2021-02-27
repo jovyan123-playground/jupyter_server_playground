@@ -1,4 +1,5 @@
 import argparse
+import json
 from glob import glob
 import hashlib
 import os
@@ -19,35 +20,44 @@ parser.add_argument(
     default=get_version(),
     help="""The new version.""",
 )
-parser.add_argument(
-    "--glob", "-g",
-    default=DEFAULT_GLOB,
-    help="""The glob pattern of file(s) report hashes on.""",
-)
 
 
-def main(version, glob_pattern="dist/*"):
+def compute_sha256(path):
+    """Compute the sha256 of a file"""
+    sha256 = hashlib.sha256()
+
+    with open(path, 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            sha256.update(data)
+
+    return sha256.hexdigest()
+
+
+def main(version):
     """Generate a release commit that has the sha256 digests for the release files.
     """
     cmd = f'git commit -am "Publish v{version}" -m "SHA256 hashes:"'
-    files = glob(glob_pattern)
-    if not len(files) == 2:
-        raise ValueError('Missing distribution files')
 
-    for path in files:
+    if osp.exists('setup.py'):
+        files = glob('dist/*')
+        if not len(files) == 2:
+            raise ValueError('Missing distribution files')
 
-        sha256 = hashlib.sha256()
+        for path in files:
+            sha256 = compute_sha256(path)
+            cmd += f' -m "{path}: {sha256}"'
 
-        with open(path, 'rb') as f:
-            while True:
-                data = f.read(BUF_SIZE)
-                if not data:
-                    break
-                sha256.update(data)
-
-        sha256 = sha256.hexdigest()
-        print(path, sha256)
-        cmd += f' -m "{path}: {sha256}"'
+    if osp.exists('package.json'):
+        with open('package.json') as fid:
+            data = json.load(fid)
+        if not data.get('private', False):
+            filename = run('npm pack')
+            sha256 = compute_sha256(filename)
+            os.remove(filename)
+            cmd += f' -m "{filename}: {shasum}'
 
     run(cmd)
 

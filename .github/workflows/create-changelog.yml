@@ -1,9 +1,9 @@
 name: Jupyter Server Changelog
-on: 
+on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'New Version'     
+        description: 'New Version'
         required: true
 jobs:
   changelog:
@@ -48,14 +48,15 @@ jobs:
         python scripts/git_prep_script.py \
           ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Install Dependencies
-      run: pip install -e .[publishing]
-    - name: Run the changelog prep      
+      run: |
+        pip install -e .[publishing,test]
+    - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        python scripts/bump_version.py ${VERSION}
         python scripts/changelog_prep_script.py \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --version ${VERSION} \
           --branch upstream/${BRANCH}
         git diff
     - name: Make a PR with the changelog entry change
