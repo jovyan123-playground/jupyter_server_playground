@@ -49,7 +49,7 @@ def main(args):
         run(f'python -m venv {env_name}')
         run(f'{env_name}/bin/python -m pip install -U -q pip')
         run(f'{env_name}/bin/pip install -q {fname}')
-        cmd = 'python -c "import {name}; print({name}.__version__)"'
+        cmd = f'python -c "import {name}; print({name}.__version__)"'
         output = run(f'{env_name}/bin/{cmd}')
         assert output == version
 
