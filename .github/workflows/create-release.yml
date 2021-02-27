@@ -20,6 +20,7 @@ jobs:
        POST_VERSION: ${{ github.event.inputs.post_version }}
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
+       RUNNER: "python -m scripts"
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -48,23 +49,23 @@ jobs:
         pip install -e .[publishing,test]
       - name: Get Branch from environment
       run: |
-          CODE="scripts/parse_git_ref.py ${GITHUB_REF}"
-          echo "BRANCH=$(python -m "${CODE}")" >> $GITHUB_ENV
+          CMD="${RUNNER}.parse_git_ref ${GITHUB_REF}"
+          echo "BRANCH=$(${CMD})" >> $GITHUB_ENV
         cat ${GITHUB_ENV}
     - name: Prep Git
       run: |
-        python scripts/prep_git.py ${GITHUB_REPOSITORY} ${BRANCH}
+        ${RUNNER}.prep_git ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        python scripts/bump_version.py ${VERSION}
-        python scripts/finalize_changelog.py \
+        ${RUNNER}.bump_version ${VERSION}
+        ${RUNNER}.finalize_changelog \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
           --branch upstream/${BRANCH} \
           --output ${CHANGELOG_OUTPUT}
-        python scripts/prep_python_release.py
-        python scripts/finalize_release_prep.py \
+        ${RUNNER}.prep_python_release
+        ${RUNNER}.finalize_release_prep \
           --branch upstream/${BRANCH} \
           --post-version ${POST_VERSION}
         cat ${CHANGELOG_OUTPUT}
@@ -77,8 +78,8 @@ jobs:
         twine upload --repository-url ${REGISTRY} --skip-existing dist/*
     - name: Extract Final Version
       run: |
-        RUNNER="python -m scripts/get_final_version.py"
-        echo "FINAL_VERSION=$(${RUNNER} ${VERSION})" >> $GITHUB_ENV
+        CMD="${RUNNER}.get_final_version ${VERSION}"
+        echo "FINAL_VERSION=$(${CMD})" >> $GITHUB_ENV
         cat ${GITHUB_ENV}
     - name: Push changes
       uses: ad-m/github-push-action@master

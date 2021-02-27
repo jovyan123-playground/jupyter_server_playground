@@ -17,6 +17,7 @@ jobs:
        POST_VERSION: "100.6.0.dev0"
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
+       RUNNER: "python -m scripts"
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -47,8 +48,8 @@ jobs:
       run: |
         # Release check needs to run in both PR and Push
         if [[ -z ${GITHUB_BASE_REF} ]]; then
-          CODE="scripts/parse_git_ref.py ${GITHUB_REF}"
-          echo "BRANCH=$(python -m "${CODE}")" >> $GITHUB_ENV
+          CMD="${RUNNER}.parse_git_ref ${GITHUB_REF}"
+          echo "BRANCH=$(${CMD})" >> $GITHUB_ENV
         else
           # use the PR branch
           echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
@@ -56,13 +57,13 @@ jobs:
         cat ${GITHUB_ENV}
     - name: Prep Git
       run: |
-        python scripts/prep_git.py ${GITHUB_REPOSITORY} ${BRANCH}
+        ${RUNNER}.prep_git ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        python scripts/bump_version.py ${VERSION}
-        python scripts/changelog_prep_script.py \
+        ${RUNNER}.bump_version ${VERSION}
+        ${RUNNER}.changelog_prep_script \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
           --branch upstream/${BRANCH}
         git diff
@@ -74,13 +75,13 @@ jobs:
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        python scripts/bump_version.py ${VERSION}
-        python scripts/finalize_changelog.py \
+        ${RUNNER}.bump_version ${VERSION}
+        ${RUNNER}.finalize_changelog \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
           --branch upstream/${BRANCH} \
           --output ${CHANGELOG_OUTPUT}
-        python scripts/prep_python_release.py
-        python scripts/finalize_release_prep.py \
+        ${RUNNER}.prep_python_release
+        ${RUNNER}.finalize_release_prep \
           --branch upstream/${BRANCH} \
           --post-version ${POST_VERSION}
         cat ${CHANGELOG_OUTPUT}
@@ -93,8 +94,8 @@ jobs:
         twine upload --repository-url ${REGISTRY} --skip-existing dist/*
     - name: Extract Final Version
       run: |
-        RUNNER="python -m scripts/get_final_version.py"
-        echo "FINAL_VERSION=$(${RUNNER} ${VERSION})" >> $GITHUB_ENV
+        CMD="${RUNNER}.get_final_version.py ${VERSION}"
+        echo "FINAL_VERSION=$(${CMD})" >> $GITHUB_ENV
         cat ${GITHUB_ENV}
     - name: Push the commit(s) and tag(s) to the branch
       run: |
