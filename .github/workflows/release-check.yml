@@ -50,7 +50,7 @@ jobs:
           # find the current branch using utility function
           CODE="from scripts.utils import get_branch; print(get_branch())"
           echo $CODE
-          echo $(python -c "${CODE}")
+          echo python -c "${CODE}"
           echo "BRANCH=$(python -c "${CODE}")" >> $GITHUB_ENV
         else
           # use the PR branch
