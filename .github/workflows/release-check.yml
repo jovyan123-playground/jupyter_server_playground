@@ -77,11 +77,11 @@ jobs:
         python scripts/bump_version.py ${VERSION}
         python scripts/finalize_changelog.py \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --branch upstream/${BRANCH}
+          --branch upstream/${BRANCH} \
           --output ${CHANGELOG_OUTPUT}
         python scripts/prep_python_release.py
         python scripts/finalize_release_prep.py \
-          --branch upstream/${BRANCH}
+          --branch upstream/${BRANCH} \
           --post-version ${POST_VERSION}
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
