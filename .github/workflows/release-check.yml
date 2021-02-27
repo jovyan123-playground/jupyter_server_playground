@@ -51,6 +51,7 @@ jobs:
           CODE="from scripts.utils import get_branch; print(get_branch())"
           echo $CODE
           python -c "${CODE}"
+          git branch --show-current
           echo "BRANCH=$(python -c "${CODE}")" >> $GITHUB_ENV
         else
           # use the PR branch
