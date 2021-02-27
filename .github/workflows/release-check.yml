@@ -78,7 +78,7 @@ jobs:
         python scripts/finalize_changelog.py \
           ${GITHUB_REPOSITORY} ${CHANGELOG} \
           --branch upstream/${BRANCH}
-          --output ${CHANGELOG_OUTPUT} \
+          --output ${CHANGELOG_OUTPUT}
         python scripts/prep_python_release.py
         python scripts/finalize_release_prep.py \
           --branch upstream/${BRANCH}
