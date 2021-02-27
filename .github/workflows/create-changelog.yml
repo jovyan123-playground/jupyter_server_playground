@@ -45,7 +45,7 @@ jobs:
         cat ${GITHUB_ENV}
     - name: Prep Git
       run: |
-        python scripts/git_prep.py \
+        python scripts/prep_git.py \
           ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Install Dependencies
       run: |
