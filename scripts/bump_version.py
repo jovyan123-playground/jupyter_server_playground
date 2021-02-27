@@ -21,7 +21,7 @@ parser.add_argument(
 )
 
 
-def main(version, version_command):
+def main(version_spec, version_command):
     """Handle the new version"""
     ## Bump the verison
     run(f'{version_command} {version_spec}')
