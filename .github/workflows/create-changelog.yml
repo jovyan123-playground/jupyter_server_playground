@@ -41,7 +41,8 @@ jobs:
           ${{ runner.os }}-pip-
     - name: Get Branch from environment
       run: |
-        echo "BRANCH=$(echo ${GITHUB_REF} | egrep -o "[^/]*$")" >> $GITHUB_ENV
+        CODE="from scripts.utils import get_branch; print(get_branch())"
+        echo "BRANCH=$(python -c $CODE}) >> $GITHUB_ENV
         cat ${GITHUB_ENV}
     - name: Prep Git
       run: |

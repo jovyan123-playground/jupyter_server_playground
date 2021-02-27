@@ -21,13 +21,14 @@ parser.add_argument(
 
 
 def main(args):
-    """Handle the creation of a new changelog entry"""
+    """Build and test the python package"""
     # Get the new version and the package name
     version = get_version()
     name = get_name()
 
     # Test the library
-    #run(args.test_command)
+    if args.test_command:
+        run(args.test_command)
 
     # Build and check the dist files
     shutil.rmtree('./dist', ignore_errors=True)
@@ -40,7 +41,8 @@ def main(args):
 
     run('twine check dist/*')
 
-    # Install and import sdist and wheel in venv
+    # Create venvs to install sdist and wheel
+    # import the package in the venv
     for asset in ['gz', 'whl']:
         env_name = f"./test_{asset}"
         fname = glob(f'dist/*.{asset}')[0]
