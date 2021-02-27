@@ -46,7 +46,7 @@ jobs:
     - name: Get Branch from environment
       run: |
         CODE="from scripts.utils import get_branch; print(get_branch())"
-        echo "BRANCH=$(python -c $CODE}) >> $GITHUB_ENV
+        echo "BRANCH=$(python -c ${CODE})" >> $GITHUB_ENV
         cat ${GITHUB_ENV}
     - name: Prep Git
       run: |
