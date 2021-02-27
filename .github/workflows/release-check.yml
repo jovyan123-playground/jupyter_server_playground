@@ -46,7 +46,7 @@ jobs:
         if [[ -z ${GITHUB_BASE_REF} ]]; then
           # find the current branch using utility function
           CODE="from scripts.utils import get_branch; print(get_branch())"
-        echo "BRANCH=$(python -c \"${CODE}\")" >> $GITHUB_ENV
+        echo "BRANCH=$(python -c "${CODE}")" >> $GITHUB_ENV
         else
           # use the PR branch
           echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
