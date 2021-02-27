@@ -43,18 +43,17 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
-    - name: Get Branch from environment
+    - name: Install Dependencies
+      run: |
+        pip install -e .[publishing,test]
+      - name: Get Branch from environment
       run: |
         CODE="from scripts.utils import get_branch; print(get_branch())"
         echo "BRANCH=$(python -c "${CODE}")" >> $GITHUB_ENV
         cat ${GITHUB_ENV}
     - name: Prep Git
       run: |
-        python scripts/prep_git.py \
-          ${GITHUB_REPOSITORY} ${BRANCH}
-    - name: Install Dependencies
-      run: |
-        pip install -e .[publishing,test]
+        python scripts/prep_git.py ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
