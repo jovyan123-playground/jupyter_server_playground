@@ -47,14 +47,8 @@ jobs:
       run: |
         # Release check needs to run in both PR and Push
         if [[ -z ${GITHUB_BASE_REF} ]]; then
-          # find the current branch using utility function
-          CODE="from scripts.utils import get_branch; print(get_branch())"
-          echo $CODE
-          echo "PYTHON:"
-          python -c "${CODE}"
-          echo "GIT BRANCH:"
-          git branch --show-current
-          echo "BRANCH=$(python -c "${CODE}")" >> $GITHUB_ENV
+          CODE="scripts/parse_git_ref.py ${GITHUB_REF}"
+          echo "BRANCH=$(python -m "${CODE}")" >> $GITHUB_ENV
         else
           # use the PR branch
           echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
