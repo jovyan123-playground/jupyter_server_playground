@@ -42,13 +42,15 @@ jobs:
           ${{ runner.os }}-pip-
     - name: Install Dependencies
       run: |
-        pip install -e .[publishing,test]
+        #pip install -e .[publishing,test]
     - name: Get Branch from environment
       run: |
         # Release check needs to run in both PR and Push
         if [[ -z ${GITHUB_BASE_REF} ]]; then
           # find the current branch using utility function
           CODE="from scripts.utils import get_branch; print(get_branch())"
+          echo $CODE
+          echo $(python -c "${CODE}")
           echo "BRANCH=$(python -c "${CODE}")" >> $GITHUB_ENV
         else
           # use the PR branch
