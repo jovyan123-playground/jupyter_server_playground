@@ -47,27 +47,23 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install -e .[publishing,test]
-      - name: Get Branch from environment
+    - name: Initialize Environment
       run: |
-          CMD="${RUNNER}.parse_git_ref ${GITHUB_REF}"
-          echo "BRANCH=$(${CMD})" >> $GITHUB_ENV
+        ${RUNNER} prep_env
         cat ${GITHUB_ENV}
-    - name: Prep Git
+    - name: Run the changelog prep
+      env:
+        GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER}.prep_git ${GITHUB_REPOSITORY} ${BRANCH}
+        ${RUNNER} prep_changelog
+        git diff
     - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER}.bump_version ${VERSION}
-        ${RUNNER}.finalize_changelog \
-          ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --branch upstream/${BRANCH} \
-          --output ${CHANGELOG_OUTPUT}
-        ${RUNNER}.prep_python_release
-        ${RUNNER}.finalize_release_prep \
-          --branch upstream/${BRANCH} \
-          --post-version ${POST_VERSION}
+        ${RUNNER} finalize_changelog
+        ${RUNNER} prep_python
+        ${RUNNER} finalize_release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:
@@ -76,11 +72,6 @@ jobs:
         REGISTRY: https://test.pypi.org/legacy/
       run: |
         twine upload --repository-url ${REGISTRY} --skip-existing dist/*
-    - name: Extract Final Version
-      run: |
-        CMD="${RUNNER}.get_final_version ${VERSION}"
-        echo "FINAL_VERSION=$(${CMD})" >> $GITHUB_ENV
-        cat ${GITHUB_ENV}
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:

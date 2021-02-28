@@ -15,6 +15,7 @@ jobs:
     env:
        VERSION: "100.5.1"
        POST_VERSION: "100.6.0.dev0"
+       REMOTE: upstream
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
        RUNNER: "python -m scripts"
@@ -43,29 +44,16 @@ jobs:
           ${{ runner.os }}-pip-
     - name: Install Dependencies
       run: |
-        #pip install -e .[publishing,test]
-    - name: Get Branch from environment
+        pip install -e .[publishing,test]
+    - name: Initialize Environment
       run: |
-        # Release check needs to run in both PR and Push
-        if [[ -z ${GITHUB_BASE_REF} ]]; then
-          CMD="${RUNNER}.parse_git_ref ${GITHUB_REF}"
-          echo "BRANCH=$(${CMD})" >> $GITHUB_ENV
-        else
-          # use the PR branch
-          echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
-        fi
+        ${RUNNER} prep_env
         cat ${GITHUB_ENV}
-    - name: Prep Git
-      run: |
-        ${RUNNER}.prep_git ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER}.bump_version ${VERSION}
-        ${RUNNER}.changelog_prep_script \
-          ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --branch upstream/${BRANCH}
+        ${RUNNER} prep_changelog
         git diff
     - name: Make a PR with the changelog entry change
       run: |
@@ -75,15 +63,9 @@ jobs:
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER}.bump_version ${VERSION}
-        ${RUNNER}.finalize_changelog \
-          ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --branch upstream/${BRANCH} \
-          --output ${CHANGELOG_OUTPUT}
-        ${RUNNER}.prep_python_release
-        ${RUNNER}.finalize_release_prep \
-          --branch upstream/${BRANCH} \
-          --post-version ${POST_VERSION}
+        ${RUNNER} prep_release
+        ${RUNNER} prep_python
+        ${RUNNER} finalize_release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:
@@ -92,11 +74,6 @@ jobs:
         REGISTRY: https://test.pypi.org/legacy/
       run: |
         twine upload --repository-url ${REGISTRY} --skip-existing dist/*
-    - name: Extract Final Version
-      run: |
-        CMD="${RUNNER}.get_final_version.py ${VERSION}"
-        echo "FINAL_VERSION=$(${CMD})" >> $GITHUB_ENV
-        cat ${GITHUB_ENV}
     - name: Push the commit(s) and tag(s) to the branch
       run: |
         echo "Can't push on the release check"

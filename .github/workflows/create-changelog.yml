@@ -43,22 +43,15 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install -e .[publishing,test]
-    - name: Get Branch from environment
+    - name: Initialize Environment
       run: |
-          CMD="${RUNNER}.parse_git_ref ${GITHUB_REF}"
-          echo "BRANCH=$(${CMD})" >> $GITHUB_ENV
+        ${RUNNER} prep_env
         cat ${GITHUB_ENV}
-    - name: Prep Git
-      run: |
-        ${RUNNER}.prep_git ${GITHUB_REPOSITORY} ${BRANCH}
     - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER}.bump_version ${VERSION}
-        ${RUNNER}.changelog_prep_script \
-          ${GITHUB_REPOSITORY} ${CHANGELOG} \
-          --branch upstream/${BRANCH}
+        ${RUNNER} prep_changelog
         git diff
     - name: Make a PR with the changelog entry change
       uses: peter-evans/create-pull-request@v3
