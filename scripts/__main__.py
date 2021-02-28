@@ -18,9 +18,9 @@ END_MARKER = '<!-- <END NEW CHANGELOG ENTRY> -->'
 BUF_SIZE = 65536
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Start Library
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+#"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+# Start Library
+#"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 def run(cmd, **kwargs):
     """Run a command as a subprocess and get the output as a string"""
@@ -196,26 +196,66 @@ def create_release_commit(version):
     run(cmd)
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Start CLI
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+#"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+# Start CLI
+#"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-@click.group()
+class NaturalOrderGroup(click.Group):
+    """Click group that lists commmands in the order added."""
+    def list_commands(self, ctx):
+        return self.commands.keys()
+
+
+@click.group(cls=NaturalOrderGroup)
 def cli():
+    """Release helper scripts."""
     pass
 
 
+# Extracted common options
+version_options = [
+    click.option('--version', envvar='VERSION',
+        help='The new version specifier.'),
+    click.option('--version-command', envvar='VERSION_COMMAND',
+        help='The version command.',
+        default="tbump --non-interactive --only-patch")
+]
+
+branch_options = [
+    click.option('--branch', envvar='BRANCH',
+        help='The target branch.'),
+    click.option('--remote', envvar='REMOTE',
+        help='The git remote name.',
+        default='upstream'),
+    click.option('--repository', envvar='GITHUB_REPOSITORY',
+        help='The git repository.')
+]
+
+changelog_options = branch_options + [
+    click.option('--path', envvar='CHANGELOG',
+        help='The path to the changelog file.'),
+    click.option('--auth', envvar='GITHUB_ACCESS_TOKEN',
+        help='The GitHub auth token.'),
+    click.option('--resolve-backports', envvar='RESOLVE_BACKPORTS',
+        help='Resolve backport PRs to their originals.',
+        is_flag=True)
+]
+
+
+def add_options(options):
+    """Add extracted common options to a click command."""
+    # https://stackoverflow.com/a/40195800
+    def _add_options(func):
+        for option in reversed(options):
+            func = option(func)
+        return func
+    return _add_options
+
+
 @cli.command()
-@click.option('--version', help='The new version specifier.',
-              envvar='VERSION')
-@click.option('--version-command', help='The version command.',
-              default="tbump --non-interactive --only-patch",
-              envvar='VERSION_COMMAND')
-@click.option('--remote', help='The git remote name.',
-              default='upstream', envvar='REMOTE')
-@click.option('--repository', help='The git repository.',
-              envvar='GITHUB_REPOSITORY')
-def prep_env(version, version_command, remote, repository):
+@add_options(version_options)
+@add_options(branch_options)
+def prep_env(version, version_command, branch, remote, repository):
     """Prep the environment.  Bump the version, set up Git, store variables if on GitHub Actions."""
     if not version:
         raise ValueError('No new version specified')
@@ -223,23 +263,26 @@ def prep_env(version, version_command, remote, repository):
     # Bump the version
     run(f'{version_command} {version}')
 
-    # Get the branch
-    if 'GITHUB_BASE_REF' in os.environ:
-        # GitHub Action PR Event
-        branch = os.environ['GITHUB_BASE_REF']
-    elif 'GITHUB_REF' in os.environ:
-        # GitHub Action Push Event
-        # e.g. refs/heads/feature-branch-1
-        branch = os.environ['GITHUB_REF'].split('/')[-1]
-    else:
-        branch = get_branch()
+    print(f'Bumped version to {get_version()}')
 
-    print(branch)
+    # Get the branch
+    if not branch:
+        if 'GITHUB_BASE_REF' in os.environ:
+            # GitHub Action PR Event
+            branch = os.environ['GITHUB_BASE_REF']
+        elif 'GITHUB_REF' in os.environ:
+            # GitHub Action Push Event
+            # e.g. refs/heads/feature-branch-1
+            branch = os.environ['GITHUB_REF'].split('/')[-1]
+        else:
+            branch = get_branch()
+
+    print(f'branch={branch}')
 
     if not repository:
         repository = get_repository(remote)
 
-    # Set up Git Config if on github actions
+    # Set up git config if on GitHub Actions
     if 'GITHUB_ACTIONS' in os.environ:
         # Use email address for the GitHub Actions bot
         # https://github.community/t/github-actions-bot-email-address/17204/6
@@ -249,33 +292,22 @@ def prep_env(version, version_command, remote, repository):
 
     run(f'git fetch {remote} {branch} --tags')
 
-    print(repository)
+    print(f'repository={repository}')
 
     final_version = re.match("([0-9]+.[0-9]+.[0-9]+)", version).groups()[0]
-    print(final_version)
+    print(f'final_version={final_version}')
 
     if 'GITHUB_ENV' in os.environ:
         with open(os.environ['GITHUB_ENV'], 'w') as fid:
             fid.write(f'BRANCH={branch}\n')
             fid.write(f'REMOTE={remote}\n')
             fid.write(f'FINAL_VERSION={final_version}')
+        print('Wrote env variables to GITHUB_ENV file')
 
 
 @cli.command()
-@click.option('--branch', help='The target branch.',
-              envvar='BRANCH')
-@click.option('--remote', help='The git remote name.',
-              default='upstream', envvar='REMOTE')
-@click.option('--repository', help='The git repository.',
-              envvar='GITHUB_REPOSITORY')
-@click.option('--path', help='The path to the changelog file.',
-              envvar='CHANGELOG')
-@click.option('--auth', help='The GitHub auth token.',
-              envvar='GITHUB_ACCESS_TOKEN')
-@click.option('--resolve-backports', is_flag=True,
-              help='Resolve backport PRs to their originals.',
-              envvar='RESOLVE_BACKPORTS')
-def prep_changelog(branch, repository, path, auth):
+@add_options(changelog_options)
+def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
     """Prep the changelog entry."""
     branch = branch or get_branch()
 
@@ -298,7 +330,8 @@ def prep_changelog(branch, repository, path, auth):
         raise ValueError('Insert marker appears more than once in changelog')
 
     # Get the changelog entry
-    entry = get_changelog_entry(f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
+    repository = repository or get_repository()
+    entry = get_changelog_entry(repository, f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
 
     # Insert the entry into the file
     template = f"{START_MARKER}\n{entry}\n{END_MARKER}"
@@ -320,28 +353,12 @@ def prep_changelog(branch, repository, path, auth):
 
 
 @cli.command()
-@click.option('--branch', help='The target branch.',
-              envvar='BRANCH')
-@click.option('--remote', help='The git remote name.',
-              default='upstream', envvar='REMOTE')
-@click.option('--repository', help='The git repository.',
-              envvar='GITHUB_REPOSITORY')
-@click.option('--path', help='The path to the changelog file.',
-              envvar='CHANGELOG')
-@click.option('--auth', help='The GitHub auth token.',
-              envvar='GITHUB_ACCESS_TOKEN')
-@click.option('--resolve-backports', is_flag=True,
-              help='Resolve backport PRs to their originals.',
-              envvar='RESOLVE_BACKPORTS')
-@click.option('--version', help='The new version specifier.',
-              envvar='VERSION')
-@click.option('--version-command', help='The version command.',
-              default="tbump --non-interactive --only-patch",
-              envvar='VERSION_COMMAND')
-@click.option('--output', help='The output file for changelog entry.',
-              envvar='CHANGELOG_OUTPUT')
+@add_options(changelog_options)
+@add_options(version_options)
+@click.option('--output', envvar='CHANGELOG_OUTPUT',
+              help='The output file for changelog entry.')
 def prep_release(branch, repository, path, auth, resolve_backports, version, version_command, output):
-    """Prep the release - version bump and extract changelog entry."""
+    """Prep the release - version bump and extract changelog."""
     if not version:
         raise ValueError('No new version specified')
 
@@ -363,7 +380,8 @@ def prep_release(branch, repository, path, auth, resolve_backports, version, ver
 
     final_entry = changelog[start + len(START_MARKER): end]
 
-    raw_entry = get_changelog_entry(target, branch, version, auth=auth, resolve_backports=resolve_backports)
+    repository = repository or get_repository()
+    raw_entry = get_changelog_entry(repository, f'{remote}/{branch}', version, auth=auth, resolve_backports=resolve_backports)
 
     if f'# {version}' not in final_entry:
         raise ValueError(f'Did not find entry for {version}')
@@ -400,8 +418,8 @@ def prep_release(branch, repository, path, auth, resolve_backports, version, ver
 
 
 @cli.command()
-@click.option('--test-command', help='The command to run in a venv.',
-              envvar='PY_TEST_COMMAND')
+@click.option('--test-command', envvar='PY_TEST_COMMAND',
+              help='The command to run in the test venvs.')
 def prep_python(test_command):
     """Build and check the python dist files."""
     if not test_command:
@@ -432,47 +450,11 @@ def prep_python(test_command):
 
 
 @cli.command()
-@click.option('--test-command', help='The command to run in isolated install.',
-              envvar='NPM_TEST_COMMAND')
-def prep_npm(test_command):
-    """Validate the npm package."""
-    # Do a dry-run publish
-    run('npm publish --dry-run')
-
-    # npm pack
-    tarball = osp.join(os.getcwd(), run('npm pack'))
-
-    # Get the package data
-    with open("package.json") as fid:
-        data = json.load(fid)
-
-    name = data['name']
-
-    if not test_command:
-        test_command = f'node -e "require(\'{name}\')"'
-
-    # Install in a temporary directory and verify import
-    with TemporaryDirectory() as tempdir:
-        run('npm init -y', cwd=tempdir)
-        run(f'npm install {tarball}', cwd=tempdir)
-        run(test_command, cwd=tempdir)
-
-    # Remove the tarball
-    os.remove(tarball)
-
-
-@cli.command()
-@click.option('--branch', help='The target branch.',
-              envvar='BRANCH')
-@click.option('--remote', help='The git remote name.',
-              default='upstream', envvar='REMOTE')
-@click.option('--post-version',
-              help='The post release version (usually dev).',
-              envvar='POST_VERSION')
-@click.option('--version-command', help='The version command.',
-              default="tbump --non-interactive --only-patch",
-              envvar='VERSION_COMMAND')
-def finalize_release(branch, remote, post_version, version_command):
+@add_options(branch_options)
+@add_options(version_options)
+@click.option('--post-version', envvar='POST_VERSION',
+              help='The post release version (usually dev).')
+def finalize_release(branch, remote, repository, version, version_command, post_version):
     """Finalize the release prep - create commits and tag."""
     # Get the new version
     version = get_version()
@@ -487,10 +469,12 @@ def finalize_release(branch, remote, post_version, version_command):
     # Bump to post version if given
     if post_version:
         run(f'{version_command} {post_version}')
-        run(f'git commit -a -m "Bump to {post_version}"')
+        version = get_version()
+        print(f'Bumped version to {version}')
+        run(f'git commit -a -m "Bump to {version}"')
 
     # Verify the commits and tags
-    diff = run(f'git --no-pager diff HEAD {orig_branch}')
+    diff = run(f'git --no-pager diff HEAD {remote}/{branch}')
     assert version in diff
 
     tags = run('git --no-pager tag').splitlines()
