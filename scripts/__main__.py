@@ -1,17 +1,26 @@
+from glob import glob
+import hashlib
 import json
 import os
 import os.path as osp
 import re
 import shlex
+import shutil
 from subprocess import check_output
+from tempfile import TemporaryDirectory
 
 import click
+from github_activity import generate_activity_md
 
 HERE = osp.abspath(osp.dirname(__file__))
 START_MARKER = '<!-- <START NEW CHANGELOG ENTRY> -->'
 END_MARKER = '<!-- <END NEW CHANGELOG ENTRY> -->'
 BUF_SIZE = 65536
 
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Start Library
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 def run(cmd, **kwargs):
     """Run a command as a subprocess and get the output as a string"""
@@ -185,6 +194,11 @@ def create_release_commit(version):
             cmd += f' -m "{filename}: {shasum}'
 
     run(cmd)
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Start CLI
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 @click.group()
 def cli():
