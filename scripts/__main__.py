@@ -214,7 +214,7 @@ def cli():
 
 # Extracted common options
 version_options = [
-    click.option('--version', envvar='VERSION',
+    click.option('--version-spec', envvar='VERSION_SPEC',
         help='The new version specifier.'),
     click.option('--version-command', envvar='VERSION_COMMAND',
         help='The version command.',
@@ -255,15 +255,16 @@ def add_options(options):
 @cli.command()
 @add_options(version_options)
 @add_options(branch_options)
-def prep_env(version, version_command, branch, remote, repository):
+def prep_env(version_spec, version_command, branch, remote, repository):
     """Prep the environment.  Bump the version, set up Git, store variables if on GitHub Actions."""
-    if not version:
+    if not version_spec:
         raise ValueError('No new version specified')
 
     # Bump the version
-    run(f'{version_command} {version}')
+    run(f'{version_command} {version_spec}')
 
-    print(f'Bumped version to {get_version()}')
+    version = get_version()
+    print(f'version={version}')
 
     # Get the branch
     if not branch:
@@ -295,13 +296,14 @@ def prep_env(version, version_command, branch, remote, repository):
     print(f'repository={repository}')
 
     final_version = re.match("([0-9]+.[0-9]+.[0-9]+)", version).groups()[0]
-    print(f'final_version={final_version}')
+    is_prerelease = str(final_version != version).lower()
+    print(f'is_prerelease={is_prerelease}')
 
     if 'GITHUB_ENV' in os.environ:
         with open(os.environ['GITHUB_ENV'], 'w') as fid:
             fid.write(f'BRANCH={branch}\n')
-            fid.write(f'REMOTE={remote}\n')
-            fid.write(f'FINAL_VERSION={final_version}')
+            fid.write(f'VERSION={version}\n')
+            fid.write(f'IS_PRERELEASE={is_prerelease}')
         print('Wrote env variables to GITHUB_ENV file')
 
 
@@ -357,13 +359,16 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
 @add_options(version_options)
 @click.option('--output', envvar='CHANGELOG_OUTPUT',
               help='The output file for changelog entry.')
-def prep_release(branch, repository, path, auth, resolve_backports, version, version_command, output):
+def prep_release(branch, repository, path, auth, resolve_backports, version_spec, version_command, output):
     """Prep the release - version bump and extract changelog."""
     if not version:
         raise ValueError('No new version specified')
 
     # Bump the version
-    run(f'{version_command} {version}')
+    run(f'{version_command} {version_spec}')
+
+    # Get the new version
+    version = get_version()
 
     # Finalize the changelog
     with open(path) as fid:
@@ -452,9 +457,9 @@ def prep_python(test_command):
 @cli.command()
 @add_options(branch_options)
 @add_options(version_options)
-@click.option('--post-version', envvar='POST_VERSION',
+@click.option('--post-version-spec', envvar='POST_VERSION_SPEC',
               help='The post release version (usually dev).')
-def finalize_release(branch, remote, repository, version, version_command, post_version):
+def finalize_release(branch, remote, repository, version_spec, version_command, post_version_spec):
     """Finalize the release prep - create commits and tag."""
     # Get the new version
     version = get_version()

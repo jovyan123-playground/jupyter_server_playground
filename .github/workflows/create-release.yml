@@ -2,11 +2,11 @@ name: Jupyter Server Release Script
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'New Version'
+      version_spec:
+        description: 'New Version Specifier'
         required: true
-      post_version:
-        description: 'Post Version'
+      post_version_spec:
+        description: 'Post Version Specifier'
 jobs:
   release:
     runs-on: ${{ matrix.os }}-latest
@@ -16,11 +16,12 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
-       VERSION: ${{ github.event.inputs.version }}
-       POST_VERSION: ${{ github.event.inputs.post_version }}
+       VERSION_SPEC: ${{ github.event.inputs.version_spec }}
+       POST_VERSION_SPEC: ${{ github.event.inputs.post_version_spec }}
+       REMOTE: "upstream"
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
-       RUNNER: "python -m scripts"
+       RELEASE_HELPER: "python -m scripts"
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -49,21 +50,21 @@ jobs:
         pip install -e .[publishing,test]
     - name: Initialize Environment
       run: |
-        ${RUNNER} prep_env
+        ${RELEASE_HELPER} prep_env
         cat ${GITHUB_ENV}
     - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER} prep_changelog
+        ${RELEASE_HELPER} prep_changelog
         git diff
     - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER} finalize_changelog
-        ${RUNNER} prep_python
-        ${RUNNER} finalize_release
+        ${RELEASE_HELPER} prep_release
+        ${RELEASE_HELPER} prep_python
+        ${RELEASE_HELPER} finalize_release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:
@@ -86,4 +87,4 @@ jobs:
         tag_name: v${{ env.VERSION }}
         release_name: Release v${{ env.VERSION }}
         body_path: ${{ env.CHANGELOG_OUTPUT }}
-        prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
+        prerelease: ${{ env.IS_PRERELEASE == 'true' }}

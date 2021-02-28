@@ -13,12 +13,12 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
-       VERSION: "100.5.1"
-       POST_VERSION: "100.6.0.dev0"
+       VERSION_SPEC: "100.5.1"
+       POST_VERSION_SPEC: "100.6.0.dev0"
        REMOTE: upstream
        CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
-       RUNNER: "python -m scripts"
+       RELEASE_HELPER: "python -m scripts"
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -47,25 +47,26 @@ jobs:
         pip install -e .[publishing,test]
     - name: Initialize Environment
       run: |
-        ${RUNNER} prep_env
+        ${RELEASE_HELPER} prep_env
         cat ${GITHUB_ENV}
     - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER} prep_changelog
+        ${RELEASE_HELPER} prep_changelog
         git diff
     - name: Make a PR with the changelog entry change
       run: |
         echo "Can't make a PR on the release check"
+        echo "Reverting changes for clean slate"
         git commit -a -m "Commit Changelog"
     - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER} prep_release
-        ${RUNNER} prep_python
-        ${RUNNER} finalize_release
+        ${RELEASE_HELPER} prep_release
+        ${RELEASE_HELPER} prep_python
+        ${RELEASE_HELPER} finalize_release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:
@@ -77,8 +78,6 @@ jobs:
     - name: Push the commit(s) and tag(s) to the branch
       run: |
         echo "Can't push on the release check"
-        # needs GITHUB_TOKEN in final version
-        # git push upstream ${BRANCH} --tags
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -88,7 +87,7 @@ jobs:
         tag_name: v${{ env.VERSION }}
         release_name: Release v${{ env.VERSION }}
         body_path: ${{ env.CHANGELOG_OUTPUT }}
-        prerelease: ${{ env.VERSION != env.FINAL_VERSION }}
+        prerelease: ${{ env.IS_PRERELEASE == 'true' }}
         draft: true
     - name: Delete Draft Release
       env:

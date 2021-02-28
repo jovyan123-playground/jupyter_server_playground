@@ -2,8 +2,8 @@ name: Jupyter Server Changelog
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'New Version'
+      version_sepc:
+        description: 'New Version Spec'
         required: true
 jobs:
   changelog:
@@ -14,9 +14,9 @@ jobs:
         os: [ubuntu]
         python-version: ['3.9']
     env:
-       VERSION: ${{ github.event.inputs.version }}
+       VERSION_SPEC: ${{ github.event.inputs.version }}
        CHANGELOG: "CHANGELOG.md"
-       RUNNER: "python -m scripts"
+       RELEASE_HELPER: "python -m scripts"
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -45,13 +45,13 @@ jobs:
         pip install -e .[publishing,test]
     - name: Initialize Environment
       run: |
-        ${RUNNER} prep_env
+        ${RELEASE_HELPER} prep_env
         cat ${GITHUB_ENV}
     - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RUNNER} prep_changelog
+        ${RELEASE_HELPER} prep_changelog
         git diff
     - name: Make a PR with the changelog entry change
       uses: peter-evans/create-pull-request@v3
