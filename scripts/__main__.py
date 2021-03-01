@@ -82,7 +82,7 @@ def format_pr_entry(target, number, auth=None):
     return f"- {title} [{number}]({url}) [@{user_name}]({user_url})"
 
 
-def get_changelog_entry(branch, repository, path, version, auth=None, resolve_backports=False):
+def get_changelog_entry(branch, repository, path, version, *, auth=None, resolve_backports=False):
     """Get a changelog for the changes since the last tag on the given branch.
 
     Parameters
@@ -333,7 +333,7 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
 
     # Get the changelog entry
     repository = repository or get_repository()
-    entry = get_changelog_entry(repository, f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
+    entry = get_changelog_entry(f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
 
     # Insert the entry into the file
     template = f"{START_MARKER}\n{entry}\n{END_MARKER}"
@@ -386,7 +386,7 @@ def prep_release(branch, repository, path, auth, resolve_backports, version_spec
     final_entry = changelog[start + len(START_MARKER): end]
 
     repository = repository or get_repository()
-    raw_entry = get_changelog_entry(repository, f'{remote}/{branch}', version, auth=auth, resolve_backports=resolve_backports)
+    raw_entry = get_changelog_entry(f'{remote}/{branch}', version, auth=auth, resolve_backports=resolve_backports)
 
     if f'# {version}' not in final_entry:
         raise ValueError(f'Did not find entry for {version}')
