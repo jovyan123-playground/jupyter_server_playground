@@ -132,9 +132,10 @@ def get_changelog_entry(branch, repository, path, version, *, auth=None, resolve
 
     if resolve_backports:
         for (ind, line) in enumerate(prs):
-            if re.search("[@meeseeksmachine]", line) is not None:
+            if re.search(r"\[@meeseeksmachine\]", line) is not None:
                 match = re.search(r"Backport PR #(\d+)", line)
-                prs[ind] = format_pr_entry(match.groups()[0])
+                if match:
+                    prs[ind] = format_pr_entry(match.groups()[0])
 
     prs = '\n'.join(prs).strip()
 
