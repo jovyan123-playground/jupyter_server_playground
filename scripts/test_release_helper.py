@@ -252,35 +252,32 @@ def test_prep_env(py_package, tmp_path):
     os.chdir(py_package)
     runner = CliRunner()
 
+    # Standard local run with no env variables
     result = runner.invoke(main.cli, ['prep-env', '--version-spec', '1.0.1'])
     assert result.exit_code == 0
     assert 'branch=bar' in result.output
     assert 'version=1.0.1' in result.output
     assert 'is_prerelease=false' in result.output
 
-    env_file = tmp_path.joinpath('github.env')
-    result = runner.invoke(main.cli, ['prep-env'], env=dict(VERSION_SPEC='1.0.1a1', GITHUB_ENV=str(env_file)))
-    assert result.exit_code == 0
-    assert 'version=1.0.1a1' in result.output
-    assert 'is_prerelease=true' in result.output
-    text = env_file.read_text()
-    assert 'BRANCH=bar' in text
-    assert 'VERSION=1.0.1a1' in text
-    assert 'IS_PRERELEASE=true' in text
-
+    # With GITHUB_BASE_REF (Pull Request)
     result = runner.invoke(main.cli, ['prep-env'], env=dict(GITHUB_BASE_REF='foo', VERSION_SPEC='1.0.1'))
     assert result.exit_code == 0
     assert 'branch=foo' in result.output
 
-    result = runner.invoke(main.cli, ['prep-env'], env=dict(GITHUB_REF='refs/heads/foo', VERSION_SPEC='1.0.1'))
-    assert result.exit_code == 0
-    assert 'branch=foo' in result.output
-
+    # Full GitHub Actions simulation (Push)
+    env_file = tmp_path.joinpath('github.env')
+    version_spec = '1.0.1a1'
+    env = dict(
+        GITHUB_REF='refs/heads/foo', VERSION_SPEC=version_spec,
+        GITHUB_ACTIONS='true', GITHUB_REPOSITORY='foo/bar',
+        GITHUB_ENV=str(env_file)
+    )
     with patch('scripts.__main__.run') as mock_run:
-        mock_run.return_value = '1.0.1'  # fake out the version response
-        result = runner.invoke(main.cli, ['prep-env'], env=dict(GITHUB_REF='refs/heads/foo', VERSION_SPEC='1.0.1', GITHUB_ACTIONS='true', GITHUB_REPOSITORY='foo/bar'))
+        # Fake out the version response
+        mock_run.return_value = version_spec
+        result = runner.invoke(main.cli, ['prep-env'], env=env)
         mock_run.assert_has_calls([
-            call('tbump --non-interactive --only-patch 1.0.1'),
+            call(f'tbump --non-interactive --only-patch {version_spec}'),
             call('python setup.py --version', quiet=True),
             call('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"'),
             call('git config --global user.name "GitHub Action"'),
@@ -289,7 +286,10 @@ def test_prep_env(py_package, tmp_path):
         ])
 
     assert result.exit_code == 0
-    assert 'branch=foo' in result.output
+    text = env_file.read_text()
+    assert 'BRANCH=foo' in text
+    assert f'VERSION={version_spec}' in text
+    assert 'IS_PRERELEASE=true' in text
 
     os.chdir(prev_dir)
 
