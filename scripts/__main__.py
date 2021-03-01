@@ -432,6 +432,8 @@ def prep_release(branch, remote, repository, path, auth, resolve_backports, vers
               help='The command to run in the test venvs.')
 def prep_python_dist(test_command):
     """Build and check the python dist files."""
+    # Get the current version
+    version = get_version()
 
     if not test_command:
         name = run('python setup.py --name')
