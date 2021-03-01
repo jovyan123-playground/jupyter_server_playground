@@ -322,6 +322,9 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
     """Prep the changelog entry."""
     branch = branch or get_branch()
 
+    # Make sure we have the branch fetched
+    run(f'git fetch {remote} {branch}')
+
     # Get the new version
     version = get_version()
 
@@ -341,7 +344,7 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
         raise ValueError('Insert marker appears more than once in changelog')
 
     # Get the changelog entry
-    repository = repository or get_repository()
+    repository = repository or get_repository(remote)
     entry = get_changelog_entry(f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
 
     # Insert the entry into the file
