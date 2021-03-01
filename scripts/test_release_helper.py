@@ -1,7 +1,9 @@
 from unittest.mock import patch
+import json
 import os
 import os.path as osp
 import shlex
+import shutil
 from subprocess import run
 import sys
 
@@ -32,6 +34,9 @@ def git_repo(tmp_path):
 
 @fixture
 def py_package(git_repo):
+    def r(cmd):
+        run(shlex.split(cmd), cwd=git_repo)
+
     setuppy = git_repo.joinpath("setup.py")
     setuppy.write_text("""
 import setuptools
@@ -92,6 +97,19 @@ build-backend = "setuptools.build_meta"
     readme = git_repo.joinpath("README.md")
     readme.write_text("Hello from foo project")
 
+    r('git add .')
+    r('git commit -m "initial python package"')
+    return git_repo
+
+
+@fixture
+def npm_package(git_repo):
+    def r(cmd):
+        run(shlex.split(cmd), cwd=git_repo)
+
+    r('npm init -y')
+    r('git add .')
+    r('git commit -m "initial npm package"')
     return git_repo
 
 
@@ -110,7 +128,7 @@ def test_get_repository(git_repo):
     os.chdir(prev_dir)
 
 
-def test_get_version(py_package):
+def test_get_version_python(py_package):
     prev_dir = os.getcwd()
     os.chdir(py_package)
     assert main.get_version() == '0.0.1'
@@ -118,6 +136,17 @@ def test_get_version(py_package):
     cmd = shlex.split('tbump --non-interactive --only-patch 0.0.2a0')
     run(cmd, cwd=py_package)
     assert main.get_version() == '0.0.2a0'
+    os.chdir(prev_dir)
+
+
+def test_get_version_npm(npm_package):
+    prev_dir = os.getcwd()
+    os.chdir(npm_package)
+    assert main.get_version() == '1.0.0'
+    print(str(py_package))
+    cmd = shlex.split('npm version patch')
+    run(cmd, cwd=npm_package)
+    assert main.get_version() == '1.0.1'
     os.chdir(prev_dir)
 
 
@@ -187,11 +216,33 @@ def test_create_release_commit(py_package):
     r('tbump --non-interactive --only-patch 0.0.2a0')
     version = main.get_version()
     r('python -m build .')
-    main.create_release_commit(version)
-    import pdb; pdb.set_trace()
-    r('npm init -y')
-    main.create_release_commit(version)
+    shas = main.create_release_commit(version)
+    assert 'dist/foo-0.0.2a0.tar.gz' in shas
+    assert 'dist/foo-0.0.2a0-py3-none-any.whl' in shas
+    shutil.rmtree(py_package / 'dist')
 
+    # Add an npm package and test with that
+    r('npm init -y')
+    r('git add .')
+    with open(py_package / "package.json") as fid:
+        data = json.load(fid)
+    data['version'] = version
+    with open(py_package / "package.json", "w") as fid:
+        json.dump(data, fid, indent=4)
+    txt = (py_package / "tbump.toml").read_text()
+    txt += """
+[[file]]
+src = "package.json"
+search = '"version": "{current_version}"'
+"""
+    (py_package / "tbump.toml").write_text(txt)
+    r('tbump --non-interactive --only-patch 0.0.2a1')
+    version = main.get_version()
+    r('python -m build .')
+    shas = main.create_release_commit(version)
+    npm_dist = f'{py_package.name}-0.0.2a1.tgz'
+    assert npm_dist in shas
+    assert 'dist/foo-0.0.2a1.tar.gz' in shas
     os.chdir(prev_dir)
 
 

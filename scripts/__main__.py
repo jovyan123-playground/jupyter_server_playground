@@ -176,6 +176,8 @@ def create_release_commit(version):
     """
     cmd = f'git commit -am "Publish v{version}" -m "SHA256 hashes:"'
 
+    shas = dict()
+
     if osp.exists('setup.py'):
         files = glob('dist/*')
         if not len(files) == 2:
@@ -183,6 +185,7 @@ def create_release_commit(version):
 
         for path in files:
             sha256 = compute_sha256(path)
+            shas[path] = sha256
             cmd += f' -m "{path}: {sha256}"'
 
     if osp.exists('package.json'):
@@ -191,11 +194,13 @@ def create_release_commit(version):
         if not data.get('private', False):
             filename = run('npm pack')
             sha256 = compute_sha256(filename)
+            shas[filename] = sha256
             os.remove(filename)
-            cmd += f' -m "{filename}: {shasum}'
+            cmd += f' -m "{filename}: {sha256}"'
 
     run(cmd)
 
+    return shas
 
 #"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 # Start CLI
