@@ -196,11 +196,13 @@ def test_get_changelog_entry(py_package):
     version = main.get_version()
 
     with patch('scripts.__main__.generate_activity_md') as mocked_gen:
+        mocked_gen.return_value = CHANGELOG_ENTRY
         resp = main.get_changelog_entry('foo', 'bar/baz', changelog, version)
         mocked_gen.assert_called_with('bar/baz', since='v0.0.1',
             kind='pr', auth=None)
 
     assert f'## {version}' in resp
+    assert PR_ENTRY in resp
 
     with patch('scripts.__main__.generate_activity_md') as mocked_gen:
         mocked_gen.return_value = CHANGELOG_ENTRY
@@ -209,7 +211,10 @@ def test_get_changelog_entry(py_package):
             kind='pr', auth='bizz')
 
     assert f'## {version}' in resp
+    assert PR_ENTRY in resp
+
     os.chdir(prev_dir)
+
 
 
 def test_compute_sha256(py_package):
@@ -369,26 +374,3 @@ def test_finalize_release(py_package):
     result = runner.invoke(main.cli, ['finalize-release', '--post-version-spec', '1.5.2.dev0'])
     assert result.exit_code == 0
     os.chdir(prev_dir)
-
-# Notes
-# Create a python package and git local repo
-#   https://github.com/jupyter/jupyter-packaging/blob/master/tests/conftest.py
-# Stub out generate_activity_md - all local
-# Need to make a target branch and add tags - see script below
-# Then we can run the following cases:
-#   - local (no GITHUB_ set except GITHUB_ACCESS_TOKEN)
-#   - PR - GITHUB_BASE_REF, GITHUB_REPOSITORY, and GITHUB_ACTIONS set
-#   - PUSH - GITHUB_REF, GITHUB_REPOSITORY, and GITHUB_ACTIONS set
-# Also need to stub out requests.get for format_pr_entry - add fake meeseeks
-
-
-# GIT BOOTSTRAP SCRIPT
-# git init
-# git checkout -b bar
-# git checkout -b foo
-# touch foo.txt
-# git add .
-# git commit -m "foo"
-# git tag v0.0.1
-# git checkout bar
-# git remote add upstream ${PWD}

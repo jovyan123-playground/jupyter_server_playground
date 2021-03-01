@@ -501,7 +501,12 @@ def finalize_release(branch, remote, repository, version_spec, version_command, 
     # Verify the commits and tags
     run(f'git fetch {remote} {branch}')
     diff = run(f'git --no-pager diff HEAD {remote}/{branch}')
-    assert version in diff
+
+    # If running in unit test, the branches are one and the same
+    # Since the remote is a local directory
+    url = run(f'git remote get-url {remote}')
+    if url != os.getcwd():
+        assert version in diff
 
     tags = run('git --no-pager tag').splitlines()
     assert tag_name in tags, tags
