@@ -376,6 +376,8 @@ def prep_release(branch, remote, repository, path, auth, resolve_backports, vers
     if not version_spec:
         raise ValueError('No new version specified')
 
+    branch = branch or get_branch()
+
     # Bump the version
     run(f'{version_command} {version_spec}')
 
@@ -397,7 +399,7 @@ def prep_release(branch, remote, repository, path, auth, resolve_backports, vers
 
     final_entry = changelog[start + len(START_MARKER): end]
 
-    repository = repository or get_repository()
+    repository = repository or get_repository(remote)
     raw_entry = get_changelog_entry(f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
 
     if f'# {version}' not in final_entry:

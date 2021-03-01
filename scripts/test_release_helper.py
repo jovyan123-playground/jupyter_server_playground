@@ -127,8 +127,7 @@ build-backend = "setuptools.build_meta"
     return git_repo
 
 
-@fixture
-def npm_package(git_repo):
+def create_npm_package(git_repo):
     def r(cmd):
         run(shlex.split(cmd), cwd=git_repo)
 
@@ -136,6 +135,11 @@ def npm_package(git_repo):
     r('git add .')
     r('git commit -m "initial npm package"')
     return git_repo
+
+
+@fixture
+def npm_package(git_repo):
+    return create_npm_package(git_repo)
 
 
 def test_get_branch(git_repo):
@@ -226,8 +230,7 @@ def test_create_release_commit(py_package):
     shutil.rmtree(py_package / 'dist')
 
     # Add an npm package and test with that
-    r('npm init -y')
-    r('git add .')
+    create_npm_package(git_repo)
     with open(py_package / "package.json") as fid:
         data = json.load(fid)
     data['version'] = version
@@ -311,6 +314,34 @@ def test_prep_changelog(py_package):
     assert main.START_MARKER in text
     assert main.END_MARKER in text
     assert '[#14](https://github.com/executablebooks/github-activity/pull/14)' in text
+    os.chdir(prev_dir)
+
+
+def test_prep_release(py_package, tmp_path):
+    prev_dir = os.getcwd()
+    os.chdir(py_package)
+    runner = CliRunner()
+    changelog = py_package / 'CHANGELOG.md'
+    output = tmp_path / 'output.md'
+
+    # prep the changelog first
+    version_spec = '1.5.1'
+    main.run(f'tbump --non-interactive --only-patch {version_spec}')
+
+    with patch('scripts.__main__.generate_activity_md') as mocked_gen:
+        mocked_gen.return_value = CHANGELOG_ENTRY
+        result = runner.invoke(main.cli, ['prep-changelog', '--path', changelog])
+    assert result.exit_code == 0
+
+    # then prep the release
+    with patch('scripts.__main__.generate_activity_md') as mocked_gen:
+        mocked_gen.return_value = CHANGELOG_ENTRY
+        result = runner.invoke(main.cli, ['prep-release', '--path', changelog, '--output', output, '--version-spec', version_spec])
+    assert result.exit_code == 0
+
+    assert '[#14](https://github.com/executablebooks/github-activity/pull/14)' in output.read_text()
+    assert f'{main.START_MARKER}\n{main.END_MARKER}' in changelog.read_text()
+
     os.chdir(prev_dir)
 
 
