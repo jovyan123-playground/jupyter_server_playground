@@ -41,7 +41,7 @@ def get_repository(remote):
     parts = url.split('/')[-2:]
     if ':' in parts[0]:
         parts[0] = parts[0].split(':')[-1]
-    return ''.join(parts)
+    return '/'.join(parts)
 
 
 def get_version():
@@ -432,7 +432,9 @@ def prep_release(branch, remote, repository, path, auth, resolve_backports, vers
               help='The command to run in the test venvs.')
 def prep_python_dist(test_command):
     """Build and check the python dist files."""
+
     if not test_command:
+        name = run('python setup.py --name')
         test_command = f'python -c "import {name}; print({name}.__version__)"'
 
     shutil.rmtree('./dist', ignore_errors=True)
