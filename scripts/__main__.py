@@ -273,7 +273,6 @@ def prep_env(version_spec, version_command, branch, remote, repository):
     print(f'version={version}')
 
     # Get the branch
-    print('hi', branch)
     if not branch:
         if os.environ.get('GITHUB_BASE_REF'):
             print('base ref')

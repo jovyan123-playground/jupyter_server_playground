@@ -1,4 +1,5 @@
 from unittest.mock import patch
+from click.testing import CliRunner
 import json
 import os
 import os.path as osp
@@ -245,6 +246,17 @@ search = '"version": "{current_version}"'
     assert 'dist/foo-0.0.2a1.tar.gz' in shas
     os.chdir(prev_dir)
 
+
+def test_prep_env(py_package):
+    prev_dir = os.getcwd()
+    os.chdir(py_package)
+    runner = CliRunner()
+    result = runner.invoke(main.cli, ['prep-env', '--version-spec', '1.0.1'])
+    assert result.exit_code == 0
+    assert 'branch=bar' in result.output
+    assert 'version=1.0.1' in result.output
+    assert 'is_prerelease=false' in result.output
+    os.chdir(prev_dir)
 
 # Notes
 # Create a python package and git local repo
