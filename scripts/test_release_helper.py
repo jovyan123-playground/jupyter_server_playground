@@ -25,6 +25,8 @@ def git_repo(tmp_path):
     r('git tag v0.0.1')
     r('git checkout -b bar')
     r(f'git remote add upstream {tmp_path}')
+    r('git config user.name "snuffy"')
+    r('git config user.email "snuffy@sesame.com"')
     return tmp_path
 
 
@@ -40,7 +42,8 @@ setup_args = dict(
     version="0.0.1",
     url="foo url",
     author="foo author",
-    py_module="foo",
+    author_email="foo email",
+    py_modules=["foo"],
     description="foo package",
     long_description="long_description",
     long_description_content_type="text/markdown",
@@ -85,6 +88,9 @@ src = "setup.py"
 requires = ["setuptools>=40.8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 """)
+
+    readme = git_repo.joinpath("README.md")
+    readme.write_text("Hello from foo project")
 
     return git_repo
 
@@ -170,6 +176,24 @@ def test_get_changelog_entry(py_package):
 def test_compute_sha256(py_package):
     sha = '9ff86928054a7791ed023c799702b0fa343f4a371127c43bdf583d4b0ee3a6f3'
     assert main.compute_sha256(py_package / 'CHANGELOG.md') == sha
+
+
+def test_create_release_commit(py_package):
+    def r(cmd):
+        run(shlex.split(cmd), cwd=py_package)
+
+    prev_dir = os.getcwd()
+    os.chdir(py_package)
+    r('tbump --non-interactive --only-patch 0.0.2a0')
+    version = main.get_version()
+    r('python -m build .')
+    main.create_release_commit(version)
+    import pdb; pdb.set_trace()
+    r('npm init -y')
+    main.create_release_commit(version)
+
+    os.chdir(prev_dir)
+
 
 # Notes
 # Create a python package and git local repo
