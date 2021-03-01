@@ -425,7 +425,7 @@ def prep_release(branch, repository, path, auth, resolve_backports, version_spec
 @cli.command()
 @click.option('--test-command', envvar='PY_TEST_COMMAND',
               help='The command to run in the test venvs.')
-def prep_python(test_command):
+def prep_python_dist(test_command):
     """Build and check the python dist files."""
     if not test_command:
         test_command = f'python -c "import {name}; print({name}.__version__)"'

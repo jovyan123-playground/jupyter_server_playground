@@ -47,13 +47,13 @@ jobs:
         pip install -e .[publishing,test]
     - name: Initialize Environment
       run: |
-        ${RELEASE_HELPER} prep_env
+        ${RELEASE_HELPER} prep-env
         cat ${GITHUB_ENV}
     - name: Run the changelog prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RELEASE_HELPER} prep_changelog
+        ${RELEASE_HELPER} prep-changelog
         git diff
     - name: Make a PR with the changelog entry change
       run: |
@@ -64,9 +64,9 @@ jobs:
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RELEASE_HELPER} prep_release
-        ${RELEASE_HELPER} prep_python
-        ${RELEASE_HELPER} finalize_release
+        ${RELEASE_HELPER} prep-release
+        ${RELEASE_HELPER} prep-python-dist
+        ${RELEASE_HELPER} finalize-release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:
