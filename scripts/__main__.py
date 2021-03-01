@@ -17,6 +17,7 @@ HERE = osp.abspath(osp.dirname(__file__))
 START_MARKER = '<!-- <START NEW CHANGELOG ENTRY> -->'
 END_MARKER = '<!-- <END NEW CHANGELOG ENTRY> -->'
 BUF_SIZE = 65536
+BUMP_COMMAND = "tbump --non-interactive --only-patch"
 
 
 #"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -28,6 +29,12 @@ def run(cmd, **kwargs):
     if not kwargs.pop('quiet', False):
         print(f'+ {cmd}')
     return check_output(shlex.split(cmd), **kwargs).decode('utf-8').strip()
+
+
+def bump_version(version_spec, version_command=BUMP_COMMAND):
+    """Bump version
+    """
+    run(f'{version_command} {version_spec}')
 
 
 def get_branch():
@@ -224,27 +231,28 @@ version_options = [
         help='The new version specifier.'),
     click.option('--version-command', envvar='VERSION_COMMAND',
         help='The version command.',
-        default="tbump --non-interactive --only-patch")
+        default=BUMP_COMMAND)
 ]
 
 branch_options = [
     click.option('--branch', envvar='BRANCH',
         help='The target branch.'),
     click.option('--remote', envvar='REMOTE',
-        help='The git remote name.',
-        default='upstream'),
+        default='upstream',
+        help='The git remote name.'),
     click.option('--repository', envvar='GITHUB_REPOSITORY',
         help='The git repository.')
 ]
 
 changelog_options = branch_options + [
     click.option('--path', envvar='CHANGELOG',
+        default="CHANGELOG.md",
         help='The path to the changelog file.'),
     click.option('--auth', envvar='GITHUB_ACCESS_TOKEN',
         help='The GitHub auth token.'),
     click.option('--resolve-backports', envvar='RESOLVE_BACKPORTS',
-        help='Resolve backport PRs to their originals.',
-        is_flag=True)
+        is_flag=True,
+        help='Resolve backport PRs to their originals.')
 ]
 
 
@@ -267,7 +275,7 @@ def prep_env(version_spec, version_command, branch, remote, repository):
         raise ValueError('No new version specified')
 
     # Bump the version
-    run(f'{version_command} {version_spec}')
+    bump_version(version_spec, version_command)
 
     version = get_version()
     print(f'version={version}')
@@ -379,7 +387,7 @@ def prep_release(branch, remote, repository, path, auth, resolve_backports, vers
     branch = branch or get_branch()
 
     # Bump the version
-    run(f'{version_command} {version_spec}')
+    bump_version(version_spec, version_command)
 
     # Get the new version
     version = get_version()
@@ -490,7 +498,7 @@ def finalize_release(branch, remote, repository, version_spec, version_command, 
 
     # Bump to post version if given
     if post_version_spec:
-        run(f'{version_command} {post_version_spec}')
+        bump_version(post_version_spec, version_command)
         post_version = get_version()
         print(f'Bumped version to {post_version}')
         run(f'git commit -a -m "Bump to {post_version}"')

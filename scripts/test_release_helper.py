@@ -163,9 +163,7 @@ def test_get_version_python(py_package):
     prev_dir = os.getcwd()
     os.chdir(py_package)
     assert main.get_version() == '0.0.1'
-    print(str(py_package))
-    cmd = shlex.split('tbump --non-interactive --only-patch 0.0.2a0')
-    run(cmd, cwd=py_package)
+    main.bump_version('0.0.2a0')
     assert main.get_version() == '0.0.2a0'
     os.chdir(prev_dir)
 
@@ -228,7 +226,7 @@ def test_create_release_commit(py_package):
 
     prev_dir = os.getcwd()
     os.chdir(py_package)
-    r('tbump --non-interactive --only-patch 0.0.2a0')
+    main.bump_version('0.0.2a0')
     version = main.get_version()
     r('python -m build .')
     shas = main.create_release_commit(version)
@@ -250,7 +248,7 @@ src = "package.json"
 search = '"version": "{current_version}"'
 """
     (py_package / "tbump.toml").write_text(txt)
-    r('tbump --non-interactive --only-patch 0.0.2a1')
+    main.bump_version('0.0.2a1')
     version = main.get_version()
     r('python -m build .')
     shas = main.create_release_commit(version)
@@ -290,7 +288,7 @@ def test_prep_env(py_package, tmp_path):
         mock_run.return_value = version_spec
         result = runner.invoke(main.cli, ['prep-env'], env=env)
         mock_run.assert_has_calls([
-            call(f'tbump --non-interactive --only-patch {version_spec}'),
+            call(f'{main.BUMP_COMMAND} {version_spec}'),
             call('python setup.py --version', quiet=True),
             call('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"'),
             call('git config --global user.name "GitHub Action"'),
@@ -333,7 +331,7 @@ def test_prep_release(py_package, tmp_path):
 
     # prep the changelog first
     version_spec = '1.5.1'
-    main.run(f'tbump --non-interactive --only-patch {version_spec}')
+    main.bump_version(version_spec)
 
     with patch('scripts.__main__.generate_activity_md') as mocked_gen:
         mocked_gen.return_value = CHANGELOG_ENTRY
@@ -367,7 +365,7 @@ def test_finalize_release(py_package):
     runner = CliRunner()
     # Bump the version
     version_spec = '1.5.1'
-    main.run(f'tbump --non-interactive --only-patch {version_spec}')
+    main.bump_version(version_spec)
     # Create the dist files
     main.run('python -m build .')
     # Finalize the release

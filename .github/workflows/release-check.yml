@@ -15,8 +15,6 @@ jobs:
     env:
        VERSION_SPEC: "100.5.1"
        POST_VERSION_SPEC: "100.6.0.dev0"
-       REMOTE: upstream
-       CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
        RELEASE_HELPER: "python -m scripts"
     steps:

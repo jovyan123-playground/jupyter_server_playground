@@ -15,7 +15,6 @@ jobs:
         python-version: ['3.9']
     env:
        VERSION_SPEC: ${{ github.event.inputs.version }}
-       CHANGELOG: "CHANGELOG.md"
        RELEASE_HELPER: "python -m scripts"
     steps:
     - name: Checkout

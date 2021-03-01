@@ -18,8 +18,6 @@ jobs:
     env:
        VERSION_SPEC: ${{ github.event.inputs.version_spec }}
        POST_VERSION_SPEC: ${{ github.event.inputs.post_version_spec }}
-       REMOTE: "upstream"
-       CHANGELOG: "CHANGELOG.md"
        CHANGELOG_OUTPUT: "changelog_entry.md"
        RELEASE_HELPER: "python -m scripts"
     steps:
