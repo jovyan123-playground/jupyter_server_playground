@@ -4,6 +4,7 @@ import json
 import os
 import os.path as osp
 import re
+import requests
 import shlex
 import shutil
 from subprocess import check_output
@@ -72,7 +73,7 @@ def format_pr_entry(target, number, auth=None):
     """
     api_token = auth or os.environ['GITHUB_ACCESS_TOKEN']
     headers = {'Authorization': 'token %s' % api_token}
-    r = requests.get(f'https://api.github.com/repos/{target}/pulls/{orig_pr}', headers=headers)
+    r = requests.get(f'https://api.github.com/repos/{target}/pulls/{number}', headers=headers)
     data = r.json()
     title = data['title']
     number = data['number']
@@ -390,7 +391,7 @@ def prep_release(branch, remote, repository, path, auth, resolve_backports, vers
     final_entry = changelog[start + len(START_MARKER): end]
 
     repository = repository or get_repository()
-    raw_entry = get_changelog_entry(f'{remote}/{branch}', version, auth=auth, resolve_backports=resolve_backports)
+    raw_entry = get_changelog_entry(f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
 
     if f'# {version}' not in final_entry:
         raise ValueError(f'Did not find entry for {version}')
