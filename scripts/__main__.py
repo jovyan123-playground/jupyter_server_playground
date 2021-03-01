@@ -363,7 +363,7 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
 @add_options(version_options)
 @click.option('--output', envvar='CHANGELOG_OUTPUT',
               help='The output file for changelog entry.')
-def prep_release(branch, repository, path, auth, resolve_backports, version_spec, version_command, output):
+def prep_release(branch, remote, repository, path, auth, resolve_backports, version_spec, version_command, output):
     """Prep the release - version bump and extract changelog."""
     if not version:
         raise ValueError('No new version specified')
