@@ -7,7 +7,7 @@ import re
 import requests
 import shlex
 import shutil
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 from tempfile import TemporaryDirectory
 
 import click
