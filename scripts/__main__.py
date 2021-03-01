@@ -365,7 +365,7 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
               help='The output file for changelog entry.')
 def prep_release(branch, remote, repository, path, auth, resolve_backports, version_spec, version_command, output):
     """Prep the release - version bump and extract changelog."""
-    if not version:
+    if not version_spec:
         raise ValueError('No new version specified')
 
     # Bump the version
