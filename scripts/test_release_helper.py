@@ -125,12 +125,15 @@ def test_format_pr_entry():
 
 def test_get_changelog_entry(py_package):
     changelog = py_package / 'CHANGELOG.md'
+    prev_dir = os.getcwd()
+    os.chdir(py_package)
     version = main.get_version()
+
     with patch('scripts.__main__.generate_activity_md') as mocked_gen:
          main.get_changelog_entry('foo', 'bar/baz', changelog, version)
          mocked_gen.assert_called_with('hi')
 
-
+    os.chdir(prev_dir)
 
 
 
