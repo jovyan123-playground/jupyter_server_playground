@@ -46,11 +46,10 @@ def get_repository(remote):
 
 def get_version():
     """Get the current package version"""
-    parent = osp.abspath(osp.join(HERE, '..'))
-    if osp.exists(osp.join(parent, 'setup.py')):
-        return run('python setup.py --version', cwd=parent, quiet=True)
-    elif osp.exists(osp.join(parent, 'package.json')):
-        with open(osp.join(parent, 'package.json')) as fid:
+    if osp.exists('setup.py'):
+        return run('python setup.py --version', quiet=True)
+    elif osp.exists('package.json'):
+        with open('package.json') as fid:
             return json.load(fid)['version']
 
 
@@ -481,11 +480,11 @@ def finalize_release(branch, remote, repository, version_spec, version_command, 
     run(f'git tag {tag_name} -a -m "Release {tag_name}"')
 
     # Bump to post version if given
-    if post_version:
-        run(f'{version_command} {post_version}')
-        version = get_version()
-        print(f'Bumped version to {version}')
-        run(f'git commit -a -m "Bump to {version}"')
+    if post_version_spec:
+        run(f'{version_command} {post_version_spec}')
+        post_version = get_version()
+        print(f'Bumped version to {post_version}')
+        run(f'git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
     diff = run(f'git --no-pager diff HEAD {remote}/{branch}')
