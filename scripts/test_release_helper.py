@@ -14,9 +14,10 @@ HERE = osp.abspath(osp.dirname(__file__))
 sys.path.insert(0, osp.dirname(HERE))
 from scripts import __main__ as main
 
+PR_ENTRY = "Mention the required GITHUB_ACCESS_TOKEN [#1](https://github.com/executablebooks/github-activity/pull/1) ([@consideRatio](https://github.com/consideRatio))"
 
-CHANGELOG_ENTRY = """
-# master@{2019-09-01}...master@{2019-11-01}
+CHANGELOG_ENTRY = f"""
+# master@{{2019-09-01}}...master@{{2019-11-01}}
 
 ([full changelog](https://github.com/executablebooks/github-activity/compare/479cc4b2f5504945021e3c4ee84818a10fabf810...ed7f1ed78b523c6b9fe6b3ac29e834087e299296))
 
@@ -29,7 +30,7 @@ CHANGELOG_ENTRY = """
 * some improvements to `since` and opened issues list [#8](https://github.com/executablebooks/github-activity/pull/8) ([@choldgraf](https://github.com/choldgraf))
 * Support git references etc. [#6](https://github.com/executablebooks/github-activity/pull/6) ([@consideRatio](https://github.com/consideRatio))
 * adding authentication information [#2](https://github.com/executablebooks/github-activity/pull/2) ([@choldgraf](https://github.com/choldgraf))
-* Mention the required GITHUB_ACCESS_TOKEN [#1](https://github.com/executablebooks/github-activity/pull/1) ([@consideRatio](https://github.com/consideRatio))
+* {PR_ENTRY}
 
 ## Contributors to this release
 
@@ -46,7 +47,8 @@ def git_repo(tmp_path):
 
     r('git init')
     r('git checkout -b foo')
-    r('touch foo.txt')
+    gitignore = tmp_path / ".gitignore"
+    gitignore.write_text('dist/*\nbuild/*')
     r('git add .')
     r('git commit -m "foo"')
     r('git tag v0.0.1')
@@ -230,7 +232,7 @@ def test_create_release_commit(py_package):
     shutil.rmtree(py_package / 'dist')
 
     # Add an npm package and test with that
-    create_npm_package(git_repo)
+    create_npm_package(py_package)
     with open(py_package / "package.json") as fid:
         data = json.load(fid)
     data['version'] = version
@@ -313,7 +315,7 @@ def test_prep_changelog(py_package):
     text = changelog.read_text()
     assert main.START_MARKER in text
     assert main.END_MARKER in text
-    assert '[#14](https://github.com/executablebooks/github-activity/pull/14)' in text
+    assert PR_ENTRY in text
     os.chdir(prev_dir)
 
 
@@ -339,11 +341,34 @@ def test_prep_release(py_package, tmp_path):
         result = runner.invoke(main.cli, ['prep-release', '--path', changelog, '--output', output, '--version-spec', version_spec])
     assert result.exit_code == 0
 
-    assert '[#14](https://github.com/executablebooks/github-activity/pull/14)' in output.read_text()
+    assert PR_ENTRY in output.read_text()
     assert f'{main.START_MARKER}\n{main.END_MARKER}' in changelog.read_text()
 
     os.chdir(prev_dir)
 
+
+def test_prep_python_dist(py_package):
+    prev_dir = os.getcwd()
+    os.chdir(py_package)
+    runner = CliRunner()
+    result = runner.invoke(main.cli, ['prep-python-dist'])
+    assert result.exit_code == 0
+    os.chdir(prev_dir)
+
+
+def test_finalize_release(py_package):
+    prev_dir = os.getcwd()
+    os.chdir(py_package)
+    runner = CliRunner()
+    # Bump the version
+    version_spec = '1.5.1'
+    main.run(f'tbump --non-interactive --only-patch {version_spec}')
+    # Create the dist files
+    main.run('python -m build .')
+    # Finalize the release
+    result = runner.invoke(main.cli, ['finalize-release', '--post-version-spec', '1.5.2.dev0'])
+    assert result.exit_code == 0
+    os.chdir(prev_dir)
 
 # Notes
 # Create a python package and git local repo

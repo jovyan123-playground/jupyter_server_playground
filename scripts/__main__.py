@@ -446,7 +446,7 @@ def prep_python_dist(test_command):
 
     if not test_command:
         name = run('python setup.py --name')
-        test_command = f'python -c "import {name}; print({name}.__version__)"'
+        test_command = f'python -c "import {name}"'
 
     shutil.rmtree('./dist', ignore_errors=True)
 
@@ -468,8 +468,7 @@ def prep_python_dist(test_command):
         run(f'python -m venv {env_name}')
         run(f'{env_name}/bin/python -m pip install -U -q pip')
         run(f'{env_name}/bin/pip install -q {fname}')
-        output = run(f'{env_name}/bin/{test_command}')
-        assert output == version
+        run(f'{env_name}/bin/{test_command}')
 
 
 @cli.command()
@@ -481,6 +480,9 @@ def finalize_release(branch, remote, repository, version_spec, version_command, 
     """Finalize the release prep - create commits and tag."""
     # Get the new version
     version = get_version()
+
+    # Get the branch
+    branch = branch or get_branch()
 
     # Create the release commit
     create_release_commit(version)
@@ -497,6 +499,7 @@ def finalize_release(branch, remote, repository, version_spec, version_command, 
         run(f'git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
+    run(f'git fetch {remote} {branch}')
     diff = run(f'git --no-pager diff HEAD {remote}/{branch}')
     assert version in diff
 
