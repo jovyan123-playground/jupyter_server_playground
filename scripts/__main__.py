@@ -87,10 +87,10 @@ def get_changelog_entry(branch, repository, path, version, *, auth=None, resolve
 
     Parameters
     ----------
-    target : str
-        The GitHub organization/repo
     branch : str
         The target branch
+    respository : str
+        The GitHub organization/repo
     auth : str, optional
         The GitHub authorization token
     resolve_backports: bool, optional
@@ -267,15 +267,19 @@ def prep_env(version_spec, version_command, branch, remote, repository):
     print(f'version={version}')
 
     # Get the branch
+    print('hi', branch)
     if not branch:
         if 'GITHUB_BASE_REF' in os.environ:
+            print('base ref')
             # GitHub Action PR Event
             branch = os.environ['GITHUB_BASE_REF']
         elif 'GITHUB_REF' in os.environ:
+            print('github ref')
             # GitHub Action Push Event
             # e.g. refs/heads/feature-branch-1
             branch = os.environ['GITHUB_REF'].split('/')[-1]
         else:
+            print('get branch')
             branch = get_branch()
 
     print(f'branch={branch}')
