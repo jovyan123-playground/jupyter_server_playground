@@ -269,11 +269,11 @@ def prep_env(version_spec, version_command, branch, remote, repository):
     # Get the branch
     print('hi', branch)
     if not branch:
-        if 'GITHUB_BASE_REF' in os.environ:
+        if os.environ.get('GITHUB_BASE_REF'):
             print('base ref')
             # GitHub Action PR Event
             branch = os.environ['GITHUB_BASE_REF']
-        elif 'GITHUB_REF' in os.environ:
+        elif os.environ.get('GITHUB_REF'):
             print('github ref')
             # GitHub Action Push Event
             # e.g. refs/heads/feature-branch-1
