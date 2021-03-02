@@ -363,7 +363,7 @@ def prep_env(branch, remote, repo):
         workflow = os.environ['GITHUB_WORKFLOW']
         path = f'./github/workflows/{workflow}.yml'
         diff = run(f'git diff HEAD {remote}/{branch} -- {path}')
-        msg = f'Workflow file {workflow} differs from upstream repo {repo}'
+        msg = f'Workflow file {workflow} differs from {remote} repo {repo}'
         if path in diff:
             print(diff)
             raise ValueError(msg)
