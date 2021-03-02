@@ -257,7 +257,7 @@ def _bump_version(version_spec, version_cmd=''):
 
 class NaturalOrderGroup(click.Group):
     """Click group that lists commmands in the order added."""
-    def list_cmds(self, ctx):
+    def list_commands(self, ctx):
         return self.commands.keys()
 
 
@@ -530,7 +530,7 @@ def prep_python_dist(test_cmd):
 @click.option('--post-version-spec', envvar='POST_VERSION_SPEC',
               help='The post release version (usually dev).')
 def prep_release(branch, remote, repo, version_cmd, post_version_spec):
-    """Finalize the release prep - create commits and tag."""
+    """Create commit(s) and tag, handle post version bump."""
     # Get the new version
     version = get_version()
 
