@@ -227,8 +227,6 @@ def cli():
 
 # Extracted common options
 version_options = [
-    click.option('--version-spec', envvar='VERSION_SPEC',
-        help='The new version specifier.'),
     click.option('--version-command', envvar='VERSION_COMMAND',
         help='The version command.',
         default=BUMP_COMMAND)
@@ -240,7 +238,7 @@ branch_options = [
     click.option('--remote', envvar='REMOTE',
         default='upstream',
         help='The git remote name.'),
-    click.option('--repository', envvar='GITHUB_REPOSITORY',
+    click.option('--repository', envvar='REPOSITORY',
         help='The git repository.')
 ]
 
@@ -266,16 +264,24 @@ def add_options(options):
     return _add_options
 
 
-@cli.command()
+@cli.command
+# TODO: make this a required option
+@click.option('--version-spec', envvar='VERSION_SPEC',
+        help='The new version specifier.')
 @add_options(version_options)
-@add_options(branch_options)
-def prep_env(version_spec, version_command, branch, remote, repository):
-    """Prep the environment.  Bump the version, set up Git, store variables if on GitHub Actions."""
-    if not version_spec:
-        raise ValueError('No new version specified')
+def bump_version(version_spec, version_command):
+    """Bump the version"""
+    # TODO: default version command should be based on presence of
+    # config files
 
     # Bump the version
     bump_version(version_spec, version_command)
+
+
+@cli.command
+@add_options(branch_options)
+def prep_env(branch, remote, repository):
+    """Prep the environment.  Set up Git, store variables if on GitHub Actions."""
 
     version = get_version()
     print(f'version={version}')
@@ -297,16 +303,22 @@ def prep_env(version_spec, version_command, branch, remote, repository):
 
     print(f'branch={branch}')
 
-    if not repository:
-        repository = get_repository(remote)
-
     # Set up git config if on GitHub Actions
     if 'GITHUB_ACTIONS' in os.environ:
         # Use email address for the GitHub Actions bot
         # https://github.community/t/github-actions-bot-email-address/17204/6
         run('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"')
         run('git config --global user.name "GitHub Action"')
+        if not repository:
+            # TODO: find the repository source repo
+            # https://docs.github.com/en/rest/reference/repos#get-a-repository
+            # TODO:
+            # verify workflow is the same as remote in branch
+
         run(f'git remote add {remote} https://github.com/{repository}')
+
+    if not repository:
+        repository = get_repository(remote)
 
     run(f'git fetch {remote} {branch} --tags')
 
@@ -320,6 +332,7 @@ def prep_env(version_spec, version_command, branch, remote, repository):
         with open(os.environ['GITHUB_ENV'], 'w') as fid:
             fid.write(f'BRANCH={branch}\n')
             fid.write(f'VERSION={version}\n')
+            fid.write(f'REPOSITORY={repository}')
             fid.write(f'IS_PRERELEASE={is_prerelease}')
         print('Wrote env variables to GITHUB_ENV file')
 
@@ -376,18 +389,14 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
 
 @cli.command()
 @add_options(changelog_options)
-@add_options(version_options)
 @click.option('--output', envvar='CHANGELOG_OUTPUT',
               help='The output file for changelog entry.')
-def prep_release(branch, remote, repository, path, auth, resolve_backports, version_spec, version_command, output):
-    """Prep the release - version bump and extract changelog."""
+def extract_changelog(branch, remote, repository, path, auth, resolve_backports, output):
+    """Extract the changelog entry."""
     if not version_spec:
         raise ValueError('No new version specified')
 
     branch = branch or get_branch()
-
-    # Bump the version
-    bump_version(version_spec, version_command)
 
     # Get the new version
     version = get_version()
@@ -481,7 +490,7 @@ def prep_python_dist(test_command):
 @add_options(version_options)
 @click.option('--post-version-spec', envvar='POST_VERSION_SPEC',
               help='The post release version (usually dev).')
-def finalize_release(branch, remote, repository, version_spec, version_command, post_version_spec):
+def finalize_release(branch, remote, repository, version_command, post_version_spec):
     """Finalize the release prep - create commits and tag."""
     # Get the new version
     version = get_version()
