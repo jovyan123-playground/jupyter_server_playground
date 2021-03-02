@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import os.path as osp
+from pathlib import Path
 import re
 import requests
 import shlex
@@ -17,7 +18,7 @@ HERE = osp.abspath(osp.dirname(__file__))
 START_MARKER = '<!-- <START NEW CHANGELOG ENTRY> -->'
 END_MARKER = '<!-- <END NEW CHANGELOG ENTRY> -->'
 BUF_SIZE = 65536
-BUMP_COMMAND = "tbump --non-interactive --only-patch"
+TBUMP_COMMAND = 'tbump --non-interactive --only-patch'
 
 
 #"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -30,11 +31,6 @@ def run(cmd, **kwargs):
         print(f'+ {cmd}')
     return check_output(shlex.split(cmd), **kwargs).decode('utf-8').strip()
 
-
-def bump_version(version_spec, version_command=BUMP_COMMAND):
-    """Bump version
-    """
-    run(f'{version_command} {version_spec}')
 
 
 def get_branch():
@@ -56,8 +52,7 @@ def get_version():
     if osp.exists('setup.py'):
         return run('python setup.py --version', quiet=True)
     elif osp.exists('package.json'):
-        with open('package.json') as fid:
-            return json.load(fid)['version']
+        return json.loads(Path('package.json').read_text())['version']
 
 
 def format_pr_entry(target, number, auth=None):
@@ -87,6 +82,28 @@ def format_pr_entry(target, number, auth=None):
     user_name = data['user']['login']
     user_url = data['user']['html_url']
     return f"- {title} [{number}]({url}) [@{user_name}]({user_url})"
+
+
+def get_source_repository(target, auth=None):
+    """Get the source repository for a given repo.
+
+    Parameters
+    ----------
+    target : str
+        The GitHub organization/repo
+    auth : str, optional
+        The GitHub authorization token
+
+    Returns
+    -------
+    str
+        A formatted PR entry
+    """
+    api_token = auth or os.environ['GITHUB_ACCESS_TOKEN']
+    headers = {'Authorization': 'token %s' % api_token}
+    r = requests.get(f'https://api.github.com/repos/{target}', headers=headers)
+    data = r.json()
+    return data['source']['full_name']
 
 
 def get_changelog_entry(branch, repository, path, version, *, auth=None, resolve_backports=False):
@@ -196,8 +213,7 @@ def create_release_commit(version):
             cmd += f' -m "{path}: {sha256}"'
 
     if osp.exists('package.json'):
-        with open('package.json') as fid:
-            data = json.load(fid)
+        data = json.loads(Path('package.json').read_text())
         if not data.get('private', False):
             filename = run('npm pack')
             sha256 = compute_sha256(filename)
@@ -208,6 +224,33 @@ def create_release_commit(version):
     run(cmd)
 
     return shas
+
+
+def _bump_version(version_spec, version_command=''):
+    """Bump the version"""
+    # Look for config files to determine version command if not given
+    if not version_command:
+        for name in 'bumpversion', '.bumpversion', 'bump2version', '.bump2version':
+            if osp.exists(name + '.cfg'):
+                version_command = 'bump2version'
+
+        if osp.exists('tbump.toml'):
+            version_command = version_command or TBUMP_COMMAND
+
+        if osp.exists('pyproject.toml'):
+            if 'tbump' in Path('pyproject.toml').read_text():
+                version_command = version_command or TBUMP_COMMAND
+
+        if osp.exists('setup.cfg'):
+            if 'bumpversion' in Path('setup.cfg').read_text():
+                version_command = version_command or 'bump2version'
+
+    if not version_command:
+        raise ValueError('Please specify a version bump command to run')
+
+    # Bump the version
+    run(f'{version_command} {version_spec}')
+
 
 #"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 # Start CLI
@@ -228,8 +271,7 @@ def cli():
 # Extracted common options
 version_options = [
     click.option('--version-command', envvar='VERSION_COMMAND',
-        help='The version command.',
-        default=BUMP_COMMAND)
+        help='The version command.')
 ]
 
 branch_options = [
@@ -264,25 +306,20 @@ def add_options(options):
     return _add_options
 
 
-@cli.command
-# TODO: make this a required option
+@cli.command()
 @click.option('--version-spec', envvar='VERSION_SPEC',
+        required=True,
         help='The new version specifier.')
 @add_options(version_options)
 def bump_version(version_spec, version_command):
-    """Bump the version"""
-    # TODO: default version command should be based on presence of
-    # config files
-
-    # Bump the version
-    bump_version(version_spec, version_command)
+    """Bump the version."""
+    _bump_version(version_spec, version_spec)
 
 
-@cli.command
+@cli.command()
 @add_options(branch_options)
 def prep_env(branch, remote, repository):
     """Prep the environment.  Set up Git, store variables if on GitHub Actions."""
-
     version = get_version()
     print(f'version={version}')
 
@@ -293,6 +330,7 @@ def prep_env(branch, remote, repository):
             # GitHub Action PR Event
             branch = os.environ['GITHUB_BASE_REF']
         elif os.environ.get('GITHUB_REF'):
+            import pdb; pdb.set_trace()
             print('github ref')
             # GitHub Action Push Event
             # e.g. refs/heads/feature-branch-1
@@ -310,17 +348,17 @@ def prep_env(branch, remote, repository):
         run('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"')
         run('git config --global user.name "GitHub Action"')
         if not repository:
-            # TODO: find the repository source repo
-            # https://docs.github.com/en/rest/reference/repos#get-a-repository
-            # TODO:
-            # verify workflow is the same as remote in branch
-
+            repository = get_source_repository(os.environ['GITHUB_REPOSITORY'])
+        # TODO:
+        # verify workflow is the same as remote in branch
         run(f'git remote add {remote} https://github.com/{repository}')
 
     if not repository:
         repository = get_repository(remote)
 
     run(f'git fetch {remote} {branch} --tags')
+    # TODO:
+    # actually check out this branch since we will push to it
 
     print(f'repository={repository}')
 
@@ -329,11 +367,12 @@ def prep_env(branch, remote, repository):
     print(f'is_prerelease={is_prerelease}')
 
     if 'GITHUB_ENV' in os.environ:
-        with open(os.environ['GITHUB_ENV'], 'w') as fid:
-            fid.write(f'BRANCH={branch}\n')
-            fid.write(f'VERSION={version}\n')
-            fid.write(f'REPOSITORY={repository}')
-            fid.write(f'IS_PRERELEASE={is_prerelease}')
+        Path(os.environ['GITHUB_ENV']).write_text(f"""
+BRANCH={branch}
+VERSION={version}
+REPOSITORY={repository}
+IS_PRERELEASE={is_prerelease}
+""".strip())
         print('Wrote env variables to GITHUB_ENV file')
 
 
@@ -353,8 +392,7 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
     run('git checkout .')
 
     # Get the existing changelog and run some validation
-    with open(path) as fid:
-        changelog = fid.read()
+    changlog = Path(path).read_text()
 
     marker = f"{START_MARKER}\n{END_MARKER}"
 
@@ -372,8 +410,7 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
     template = f"{START_MARKER}\n{entry}\n{END_MARKER}"
     changelog = changelog.replace(marker, template)
 
-    with open(path, 'w') as fid:
-        fid.write(changelog)
+    Path(path).write_text(changelog)
 
     ## Verify the change for the PR
     # Only one uncommitted file
@@ -402,8 +439,7 @@ def extract_changelog(branch, remote, repository, path, auth, resolve_backports,
     version = get_version()
 
     # Finalize the changelog
-    with open(path) as fid:
-        changelog = fid.read()
+    changelog = Path(path).read_text()
 
     start = changelog.find(START_MARKER)
     end = changelog.find(END_MARKER)
@@ -441,16 +477,14 @@ def extract_changelog(branch, remote, repository, path, auth, resolve_backports,
             raise ValueError(f'PR #{pr} does not belong in the changelog for {version}')
 
     if output:
-        with open(output, 'w') as fid:
-            fid.write(final_entry)
+        Path(output).write_text(final_entry)
 
     # Clear out the insertion markers and rewrite
     changelog = changelog.replace(END_MARKER, '')
     marker = f'{START_MARKER}\n{END_MARKER}\n'
     changelog = changelog.replace(START_MARKER, marker)
 
-    with open(path, 'w') as fid:
-        fid.write(changelog)
+    Path(path).write_text(changelog)
 
 
 @cli.command()

@@ -163,7 +163,7 @@ def test_get_version_python(py_package):
     prev_dir = os.getcwd()
     os.chdir(py_package)
     assert main.get_version() == '0.0.1'
-    main.bump_version('0.0.2a0')
+    main._bump_version('0.0.2a0')
     assert main.get_version() == '0.0.2a0'
     os.chdir(prev_dir)
 
@@ -185,6 +185,12 @@ def test_format_pr_entry():
          mocked_get.assert_called_with('https://api.github.com/repos/foo/pulls/121', headers={'Authorization': 'token baz'})
 
     assert resp.startswith('- ')
+
+
+def test_get_source_repository():
+    with patch('scripts.__main__.requests.get') as mocked_get:
+         resp = main.get_source_repository('foo/bar', auth='baz')
+         mocked_get.assert_called_with('https://api.github.com/repos/foo/bar', headers={'Authorization': 'token baz'})
 
 
 def test_get_changelog_entry(py_package):
@@ -226,7 +232,7 @@ def test_create_release_commit(py_package):
 
     prev_dir = os.getcwd()
     os.chdir(py_package)
-    main.bump_version('0.0.2a0')
+    main._bump_version('0.0.2a0')
     version = main.get_version()
     r('python -m build .')
     shas = main.create_release_commit(version)
@@ -248,7 +254,7 @@ src = "package.json"
 search = '"version": "{current_version}"'
 """
     (py_package / "tbump.toml").write_text(txt)
-    main.bump_version('0.0.2a1')
+    main._bump_version('0.0.2a1')
     version = main.get_version()
     r('python -m build .')
     shas = main.create_release_commit(version)
@@ -263,23 +269,26 @@ def test_prep_env(py_package, tmp_path):
     os.chdir(py_package)
     runner = CliRunner()
 
+    main._bump_version('1.0.1')
+
     # Standard local run with no env variables
-    result = runner.invoke(main.cli, ['prep-env', '--version-spec', '1.0.1'])
+    result = runner.invoke(main.cli, ['prep-env'])
     assert result.exit_code == 0
     assert 'branch=bar' in result.output
     assert 'version=1.0.1' in result.output
     assert 'is_prerelease=false' in result.output
 
     # With GITHUB_BASE_REF (Pull Request)
-    result = runner.invoke(main.cli, ['prep-env'], env=dict(GITHUB_BASE_REF='foo', VERSION_SPEC='1.0.1'))
+    result = runner.invoke(main.cli, ['prep-env'], env=dict(GITHUB_BASE_REF='foo'))
     assert result.exit_code == 0
     assert 'branch=foo' in result.output
 
     # Full GitHub Actions simulation (Push)
     env_file = tmp_path.joinpath('github.env')
     version_spec = '1.0.1a1'
+    main._bump_version(version_spec)
     env = dict(
-        GITHUB_REF='refs/heads/foo', VERSION_SPEC=version_spec,
+        GITHUB_REF='refs/heads/foo',
         GITHUB_ACTIONS='true', GITHUB_REPOSITORY='foo/bar',
         GITHUB_ENV=str(env_file)
     )
@@ -288,7 +297,6 @@ def test_prep_env(py_package, tmp_path):
         mock_run.return_value = version_spec
         result = runner.invoke(main.cli, ['prep-env'], env=env)
         mock_run.assert_has_calls([
-            call(f'{main.BUMP_COMMAND} {version_spec}'),
             call('python setup.py --version', quiet=True),
             call('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"'),
             call('git config --global user.name "GitHub Action"'),
@@ -301,6 +309,7 @@ def test_prep_env(py_package, tmp_path):
     assert 'BRANCH=foo' in text
     assert f'VERSION={version_spec}' in text
     assert 'IS_PRERELEASE=true' in text
+    assert 'REPOSITORY=foo/bar' in text
 
     os.chdir(prev_dir)
 
@@ -331,7 +340,7 @@ def test_prep_release(py_package, tmp_path):
 
     # prep the changelog first
     version_spec = '1.5.1'
-    main.bump_version(version_spec)
+    main._bump_version(version_spec)
 
     with patch('scripts.__main__.generate_activity_md') as mocked_gen:
         mocked_gen.return_value = CHANGELOG_ENTRY
@@ -365,7 +374,7 @@ def test_finalize_release(py_package):
     runner = CliRunner()
     # Bump the version
     version_spec = '1.5.1'
-    main.bump_version(version_spec)
+    main._bump_version(version_spec)
     # Create the dist files
     main.run('python -m build .')
     # Finalize the release
