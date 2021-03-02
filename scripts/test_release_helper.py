@@ -3,6 +3,7 @@ from click.testing import CliRunner
 import json
 import os
 import os.path as osp
+from pathlib import Path
 import shlex
 import shutil
 from subprocess import run
@@ -283,17 +284,24 @@ def test_prep_env(py_package, tmp_path):
     assert 'branch=foo' in result.output
 
     # Full GitHub Actions simulation (Push)
+    workflow = Path(f'{HERE}/../.github/workflows/release-check.yml')
+    workflow = workflow.resolve()
+    os.makedirs(py_package / '.github/workflows')
+    shutil.copy(workflow, py_package / '.github/workflows')
+
     env_file = tmp_path.joinpath('github.env')
     version_spec = '1.0.1a1'
     main._bump_version(version_spec)
     env = dict(
         GITHUB_REF='refs/heads/foo',
-        GITHUB_ACTIONS='true', GITHUB_REPOSITORY='foo/bar',
+        GITHUB_WORKFLOW='release-check',
+        GITHUB_ACTIONS='true', GITHUB_REPOSITORY='baz/bar',
         GITHUB_ENV=str(env_file)
     )
-    with patch('scripts.__main__.run') as mock_run:
-        # Fake out the version response
+    with patch('scripts.__main__.run') as mock_run, patch('scripts.__main__.get_source_repo') as mocked_get_source_repo:
+        # Fake out the version and source repo responses
         mock_run.return_value = version_spec
+        mocked_get_source_repo.return_value = 'foo/bar'
         result = runner.invoke(main.cli, ['prep-env'], env=env)
         mock_run.assert_has_calls([
             call('python setup.py --version', quiet=True),

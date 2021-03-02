@@ -329,7 +329,6 @@ def prep_env(branch, remote, repo):
             # GitHub Action PR Event
             branch = os.environ['GITHUB_BASE_REF']
         elif os.environ.get('GITHUB_REF'):
-            import pdb; pdb.set_trace()
             print('github ref')
             # GitHub Action Push Event
             # e.g. refs/heads/feature-branch-1
@@ -361,13 +360,12 @@ def prep_env(branch, remote, repo):
 
     # Make sure the workflow file is the same
     if gh_repo and repo != gh_repo:
-        workflow == os.environ['GITHUB_WORKFLOW']
-        path = f'./github/workflows/{workflow}'
+        workflow = os.environ['GITHUB_WORKFLOW']
+        path = f'./github/workflows/{workflow}.yml'
         diff = run(f'git diff HEAD {remote}/{branch} -- {path}')
         msg = f'Workflow file {workflow} differs from upstream repo {repo}'
-        if len(diff) != 0:
+        if path in diff:
             print(diff)
-
             raise ValueError(msg)
 
     print(f'repo={repo}')
