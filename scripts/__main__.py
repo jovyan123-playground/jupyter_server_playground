@@ -312,7 +312,7 @@ def add_options(options):
 @add_options(version_options)
 def bump_version(version_spec, version_cmd):
     """Bump the version."""
-    _bump_version(version_spec, version_spec)
+    _bump_version(version_spec, version_cmd)
 
 
 @cli.command()
@@ -400,7 +400,7 @@ def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
     run('git checkout .')
 
     # Get the existing changelog and run some validation
-    changlog = Path(path).read_text()
+    changelog = Path(path).read_text()
 
     marker = f"{START_MARKER}\n{END_MARKER}"
 
@@ -438,9 +438,6 @@ def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
               help='The output file for changelog entry.')
 def extract_changelog(branch, remote, repo, path, auth, resolve_backports, output):
     """Extract the changelog entry."""
-    if not version_spec:
-        raise ValueError('No new version specified')
-
     branch = branch or get_branch()
 
     # Get the new version
@@ -532,7 +529,7 @@ def prep_python_dist(test_cmd):
 @add_options(version_options)
 @click.option('--post-version-spec', envvar='POST_VERSION_SPEC',
               help='The post release version (usually dev).')
-def finalize_release(branch, remote, repo, version_cmd, post_version_spec):
+def prep_release(branch, remote, repo, version_cmd, post_version_spec):
     """Finalize the release prep - create commits and tag."""
     # Get the new version
     version = get_version()
@@ -541,6 +538,7 @@ def finalize_release(branch, remote, repo, version_cmd, post_version_spec):
     branch = branch or get_branch()
 
     # Check out the remote branch so we can push to it
+    run(f'git fetch {remote} {branch}')
     run(f'git checkout -b release {remote}/{branch}')
 
     # Create the release commit
@@ -552,7 +550,7 @@ def finalize_release(branch, remote, repo, version_cmd, post_version_spec):
 
     # Bump to post version if given
     if post_version_spec:
-        bump_version(post_version_spec, version_cmd)
+        _bump_version(post_version_spec, version_cmd)
         post_version = get_version()
         print(f'Bumped version to {post_version}')
         run(f'git commit -a -m "Bump to {post_version}"')

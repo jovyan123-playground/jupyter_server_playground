@@ -152,11 +152,11 @@ def test_get_branch(git_repo):
     os.chdir(prev_dir)
 
 
-def test_get_repository(git_repo):
+def test_get_repo(git_repo):
     prev_dir = os.getcwd()
     os.chdir(git_repo)
     repo = f'{git_repo.parent.name}/{git_repo.name}'
-    assert main.get_repository('upstream') == repo
+    assert main.get_repo('upstream') == repo
     os.chdir(prev_dir)
 
 
@@ -188,9 +188,9 @@ def test_format_pr_entry():
     assert resp.startswith('- ')
 
 
-def test_get_source_repository():
+def test_get_source_repo():
     with patch('scripts.__main__.requests.get') as mocked_get:
-         resp = main.get_source_repository('foo/bar', auth='baz')
+         resp = main.get_source_repo('foo/bar', auth='baz')
          mocked_get.assert_called_with('https://api.github.com/repos/foo/bar', headers={'Authorization': 'token baz'})
 
 
@@ -261,6 +261,18 @@ search = '"version": "{current_version}"'
     npm_dist = f'{py_package.name}-0.0.2a1.tgz'
     assert npm_dist in shas
     assert 'dist/foo-0.0.2a1.tar.gz' in shas
+    os.chdir(prev_dir)
+
+
+def test_bump_version(py_package):
+    prev_dir = os.getcwd()
+    os.chdir(py_package)
+    runner = CliRunner()
+
+    result = runner.invoke(main.cli, ['bump-version', '--version-spec', '1.0.1'])
+    assert main.get_version() == '1.0.1'
+    result = runner.invoke(main.cli, ['bump-version', '--version-spec', '1.0.1a2'])
+    assert main.get_version() == '1.0.1a2'
     os.chdir(prev_dir)
 
 
@@ -338,7 +350,7 @@ def test_prep_changelog(py_package):
     os.chdir(prev_dir)
 
 
-def test_prep_release(py_package, tmp_path):
+def test_extract_changelog(py_package, tmp_path):
     prev_dir = os.getcwd()
     os.chdir(py_package)
     runner = CliRunner()
@@ -355,9 +367,10 @@ def test_prep_release(py_package, tmp_path):
     assert result.exit_code == 0
 
     # then prep the release
+    main._bump_version(version_spec)
     with patch('scripts.__main__.generate_activity_md') as mocked_gen:
         mocked_gen.return_value = CHANGELOG_ENTRY
-        result = runner.invoke(main.cli, ['prep-release', '--path', changelog, '--output', output, '--version-spec', version_spec])
+        result = runner.invoke(main.cli, ['extract-changelog', '--path', changelog, '--output', output])
     assert result.exit_code == 0
 
     assert PR_ENTRY in output.read_text()
@@ -375,7 +388,7 @@ def test_prep_python_dist(py_package):
     os.chdir(prev_dir)
 
 
-def test_finalize_release(py_package):
+def test_prep_release(py_package):
     prev_dir = os.getcwd()
     os.chdir(py_package)
     runner = CliRunner()
@@ -385,6 +398,6 @@ def test_finalize_release(py_package):
     # Create the dist files
     main.run('python -m build .')
     # Finalize the release
-    result = runner.invoke(main.cli, ['finalize-release', '--post-version-spec', '1.5.2.dev0'])
+    result = runner.invoke(main.cli, ['prep-release', '--post-version-spec', '1.5.2.dev0'])
     assert result.exit_code == 0
     os.chdir(prev_dir)

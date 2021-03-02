@@ -59,7 +59,7 @@ jobs:
       run: |
         ${RELEASE_HELPER} extract-changelog
         ${RELEASE_HELPER} prep-python-dist
-        ${RELEASE_HELPER} finalize-release
+        ${RELEASE_HELPER} prep-release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package
       env:
