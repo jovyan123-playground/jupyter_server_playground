@@ -18,7 +18,7 @@ HERE = osp.abspath(osp.dirname(__file__))
 START_MARKER = '<!-- <START NEW CHANGELOG ENTRY> -->'
 END_MARKER = '<!-- <END NEW CHANGELOG ENTRY> -->'
 BUF_SIZE = 65536
-TBUMP_COMMAND = 'tbump --non-interactive --only-patch'
+TBUMP_CMD = 'tbump --non-interactive --only-patch'
 
 
 #"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -32,14 +32,13 @@ def run(cmd, **kwargs):
     return check_output(shlex.split(cmd), **kwargs).decode('utf-8').strip()
 
 
-
 def get_branch():
     """Get the local git branch"""
     return run('git branch --show-current', quiet=True)
 
 
-def get_repository(remote):
-    """Get the remote repository org and name"""
+def get_repo(remote):
+    """Get the remote repo org and name"""
     url = run(f'git remote get-url {remote}')
     parts = url.split('/')[-2:]
     if ':' in parts[0]:
@@ -84,8 +83,8 @@ def format_pr_entry(target, number, auth=None):
     return f"- {title} [{number}]({url}) [@{user_name}]({user_url})"
 
 
-def get_source_repository(target, auth=None):
-    """Get the source repository for a given repo.
+def get_source_repo(target, auth=None):
+    """Get the source repo for a given repo.
 
     Parameters
     ----------
@@ -106,7 +105,7 @@ def get_source_repository(target, auth=None):
     return data['source']['full_name']
 
 
-def get_changelog_entry(branch, repository, path, version, *, auth=None, resolve_backports=False):
+def get_changelog_entry(branch, repo, path, version, *, auth=None, resolve_backports=False):
     """Get a changelog for the changes since the last tag on the given branch.
 
     Parameters
@@ -129,10 +128,10 @@ def get_changelog_entry(branch, repository, path, version, *, auth=None, resolve
     if not since:
         raise ValueError(f'No tags found on branch {branch}')
     since = since.splitlines()[-1]
-    print(f'Getting changes to {repository} since {since}...')
+    print(f'Getting changes to {repo} since {since}...')
 
     md = generate_activity_md(
-        repository,
+        repo,
         since=since,
         kind="pr",
         auth=auth
@@ -226,30 +225,30 @@ def create_release_commit(version):
     return shas
 
 
-def _bump_version(version_spec, version_command=''):
+def _bump_version(version_spec, version_cmd=''):
     """Bump the version"""
     # Look for config files to determine version command if not given
-    if not version_command:
+    if not version_cmd:
         for name in 'bumpversion', '.bumpversion', 'bump2version', '.bump2version':
             if osp.exists(name + '.cfg'):
-                version_command = 'bump2version'
+                version_cmd = 'bump2version'
 
         if osp.exists('tbump.toml'):
-            version_command = version_command or TBUMP_COMMAND
+            version_cmd = version_cmd or TBUMP_CMD
 
         if osp.exists('pyproject.toml'):
             if 'tbump' in Path('pyproject.toml').read_text():
-                version_command = version_command or TBUMP_COMMAND
+                version_cmd = version_cmd or TBUMP_CMD
 
         if osp.exists('setup.cfg'):
             if 'bumpversion' in Path('setup.cfg').read_text():
-                version_command = version_command or 'bump2version'
+                version_cmd = version_cmd or 'bump2version'
 
-    if not version_command:
+    if not version_cmd:
         raise ValueError('Please specify a version bump command to run')
 
     # Bump the version
-    run(f'{version_command} {version_spec}')
+    run(f'{version_cmd} {version_spec}')
 
 
 #"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -258,7 +257,7 @@ def _bump_version(version_spec, version_command=''):
 
 class NaturalOrderGroup(click.Group):
     """Click group that lists commmands in the order added."""
-    def list_commands(self, ctx):
+    def list_cmds(self, ctx):
         return self.commands.keys()
 
 
@@ -270,7 +269,7 @@ def cli():
 
 # Extracted common options
 version_options = [
-    click.option('--version-command', envvar='VERSION_COMMAND',
+    click.option('--version-cmd', envvar='VERSION_CMD',
         help='The version command.')
 ]
 
@@ -280,8 +279,8 @@ branch_options = [
     click.option('--remote', envvar='REMOTE',
         default='upstream',
         help='The git remote name.'),
-    click.option('--repository', envvar='REPOSITORY',
-        help='The git repository.')
+    click.option('--repo', envvar='REPOSITORY',
+        help='The git repo.')
 ]
 
 changelog_options = branch_options + [
@@ -311,14 +310,14 @@ def add_options(options):
         required=True,
         help='The new version specifier.')
 @add_options(version_options)
-def bump_version(version_spec, version_command):
+def bump_version(version_spec, version_cmd):
     """Bump the version."""
     _bump_version(version_spec, version_spec)
 
 
 @cli.command()
 @add_options(branch_options)
-def prep_env(branch, remote, repository):
+def prep_env(branch, remote, repo):
     """Prep the environment.  Set up Git, store variables if on GitHub Actions."""
     version = get_version()
     print(f'version={version}')
@@ -341,26 +340,37 @@ def prep_env(branch, remote, repository):
 
     print(f'branch={branch}')
 
+    gh_repo = os.environ.get('GITHUB_REPOSITORY')
+
     # Set up git config if on GitHub Actions
     if 'GITHUB_ACTIONS' in os.environ:
         # Use email address for the GitHub Actions bot
         # https://github.community/t/github-actions-bot-email-address/17204/6
         run('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"')
         run('git config --global user.name "GitHub Action"')
-        if not repository:
-            repository = get_source_repository(os.environ['GITHUB_REPOSITORY'])
-        # TODO:
-        # verify workflow is the same as remote in branch
-        run(f'git remote add {remote} https://github.com/{repository}')
+        if not repo:
+            # Get the source repo
+            repo = get_source_repo(gh_repo)
 
-    if not repository:
-        repository = get_repository(remote)
+        run(f'git remote add {remote} https://github.com/{repo}')
+
+    if not repo:
+        repo = get_repo(remote)
 
     run(f'git fetch {remote} {branch} --tags')
-    # TODO:
-    # actually check out this branch since we will push to it
 
-    print(f'repository={repository}')
+    # Make sure the workflow file is the same
+    if gh_repo and repo != gh_repo:
+        workflow == os.environ['GITHUB_WORKFLOW']
+        path = f'./github/workflows/{workflow}'
+        diff = run(f'git diff HEAD {remote}/{branch} -- {path}')
+        msg = f'Workflow file {workflow} differs from upstream repo {repo}'
+        if len(diff) != 0:
+            print(diff)
+
+            raise ValueError(msg)
+
+    print(f'repo={repo}')
 
     final_version = re.match("([0-9]+.[0-9]+.[0-9]+)", version).groups()[0]
     is_prerelease = str(final_version != version).lower()
@@ -370,7 +380,7 @@ def prep_env(branch, remote, repository):
         Path(os.environ['GITHUB_ENV']).write_text(f"""
 BRANCH={branch}
 VERSION={version}
-REPOSITORY={repository}
+REPOSITORY={repo}
 IS_PRERELEASE={is_prerelease}
 """.strip())
         print('Wrote env variables to GITHUB_ENV file')
@@ -378,7 +388,7 @@ IS_PRERELEASE={is_prerelease}
 
 @cli.command()
 @add_options(changelog_options)
-def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
+def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
     """Prep the changelog entry."""
     branch = branch or get_branch()
 
@@ -403,8 +413,8 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
         raise ValueError('Insert marker appears more than once in changelog')
 
     # Get the changelog entry
-    repository = repository or get_repository(remote)
-    entry = get_changelog_entry(f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
+    repo = repo or get_repo(remote)
+    entry = get_changelog_entry(f'{remote}/{branch}', repo, path, version, auth=auth, resolve_backports=resolve_backports)
 
     # Insert the entry into the file
     template = f"{START_MARKER}\n{entry}\n{END_MARKER}"
@@ -428,7 +438,7 @@ def prep_changelog(branch, remote, repository, path, auth, resolve_backports):
 @add_options(changelog_options)
 @click.option('--output', envvar='CHANGELOG_OUTPUT',
               help='The output file for changelog entry.')
-def extract_changelog(branch, remote, repository, path, auth, resolve_backports, output):
+def extract_changelog(branch, remote, repo, path, auth, resolve_backports, output):
     """Extract the changelog entry."""
     if not version_spec:
         raise ValueError('No new version specified')
@@ -452,8 +462,8 @@ def extract_changelog(branch, remote, repository, path, auth, resolve_backports,
 
     final_entry = changelog[start + len(START_MARKER): end]
 
-    repository = repository or get_repository(remote)
-    raw_entry = get_changelog_entry(f'{remote}/{branch}', repository, path, version, auth=auth, resolve_backports=resolve_backports)
+    repo = repo or get_repo(remote)
+    raw_entry = get_changelog_entry(f'{remote}/{branch}', repo, path, version, auth=auth, resolve_backports=resolve_backports)
 
     if f'# {version}' not in final_entry:
         raise ValueError(f'Did not find entry for {version}')
@@ -488,13 +498,13 @@ def extract_changelog(branch, remote, repository, path, auth, resolve_backports,
 
 
 @cli.command()
-@click.option('--test-command', envvar='PY_TEST_COMMAND',
+@click.option('--test-cmd', envvar='PY_TEST_CMD',
               help='The command to run in the test venvs.')
-def prep_python_dist(test_command):
+def prep_python_dist(test_cmd):
     """Build and check the python dist files."""
-    if not test_command:
+    if not test_cmd:
         name = run('python setup.py --name')
-        test_command = f'python -c "import {name}"'
+        test_cmd = f'python -c "import {name}"'
 
     shutil.rmtree('./dist', ignore_errors=True)
 
@@ -516,7 +526,7 @@ def prep_python_dist(test_command):
         run(f'python -m venv {env_name}')
         run(f'{env_name}/bin/python -m pip install -U -q pip')
         run(f'{env_name}/bin/pip install -q {fname}')
-        run(f'{env_name}/bin/{test_command}')
+        run(f'{env_name}/bin/{test_cmd}')
 
 
 @cli.command()
@@ -524,13 +534,16 @@ def prep_python_dist(test_command):
 @add_options(version_options)
 @click.option('--post-version-spec', envvar='POST_VERSION_SPEC',
               help='The post release version (usually dev).')
-def finalize_release(branch, remote, repository, version_command, post_version_spec):
+def finalize_release(branch, remote, repo, version_cmd, post_version_spec):
     """Finalize the release prep - create commits and tag."""
     # Get the new version
     version = get_version()
 
     # Get the branch
     branch = branch or get_branch()
+
+    # Check out the remote branch so we can push to it
+    run(f'git checkout -b release {remote}/{branch}')
 
     # Create the release commit
     create_release_commit(version)
@@ -541,13 +554,12 @@ def finalize_release(branch, remote, repository, version_command, post_version_s
 
     # Bump to post version if given
     if post_version_spec:
-        bump_version(post_version_spec, version_command)
+        bump_version(post_version_spec, version_cmd)
         post_version = get_version()
         print(f'Bumped version to {post_version}')
         run(f'git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
-    run(f'git fetch {remote} {branch}')
     diff = run(f'git --no-pager diff HEAD {remote}/{branch}')
 
     # If running in unit test, the branches are one and the same
@@ -563,7 +575,7 @@ def finalize_release(branch, remote, repository, version_command, post_version_s
     print("\n\n\n**********\n")
     print("Release Prep Complete!")
     print(r"Push to PyPI with \`twine upload dist/*\`")
-    print(f"Push changes with `git push {remote} {branch} --tags`")
+    print(f"Push changes with `git push {remote} release --tags`")
     print("Make a GitHub release")
 
 

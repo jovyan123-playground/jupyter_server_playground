@@ -220,7 +220,6 @@ def test_get_changelog_entry(py_package):
     os.chdir(prev_dir)
 
 
-
 def test_compute_sha256(py_package):
     sha = '9ff86928054a7791ed023c799702b0fa343f4a371127c43bdf583d4b0ee3a6f3'
     assert main.compute_sha256(py_package / 'CHANGELOG.md') == sha
