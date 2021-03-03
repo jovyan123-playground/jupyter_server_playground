@@ -401,6 +401,8 @@ def test_prep_release(py_package):
     # Bump the version
     version_spec = '1.5.1'
     main._bump_version(version_spec)
+    # Prep the env
+    runner.invoke(main.cli, ['prep-env'])
     # Create the dist files
     main.run('python -m build .')
     # Finalize the release

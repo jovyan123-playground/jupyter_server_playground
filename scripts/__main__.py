@@ -366,7 +366,9 @@ def prep_env(branch, remote, repo, auth, output):
 
     print(f'repository={repo}')
 
+    # Check out the remote branch so we can push to it
     run(f'git fetch {remote} {branch} --tags')
+    run(f'git checkout -b release {remote}/{branch}')
 
     # Make sure the local workflow file is the same as the remote
     # when running on Actions
@@ -538,10 +540,6 @@ def prep_release(branch, remote, repo, version_cmd, post_version_spec):
     # Get the branch
     branch = branch or get_branch()
 
-    # Check out the remote branch so we can push to it
-    run(f'git fetch {remote} {branch}')
-    run(f'git checkout -b release {remote}/{branch}')
-
     # Create the release commit
     create_release_commit(version)
 
@@ -557,7 +555,8 @@ def prep_release(branch, remote, repo, version_cmd, post_version_spec):
         run(f'git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
-    diff = run(f'git --no-pager diff HEAD {remote}/{branch}')
+    remote_branch = run(f'git name-rev --name-only HEAD')
+    diff = run(f'git --no-pager diff HEAD {remote}/{remote_branch}')
 
     # If running in unit test, the branches are one and the same
     # Since the remote is a local directory
