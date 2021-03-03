@@ -98,7 +98,7 @@ def get_source_repo(target, auth=None):
     str
         A formatted PR entry
     """
-    api_token = auth or os.environ['GITHUB_ACCESS_TOKEN']
+    api_token = auth or os.environ.get('GITHUB_ACCESS_TOKEN')
     headers = {'Authorization': 'token %s' % api_token}
     r = requests.get(f'https://api.github.com/repos/{target}', headers=headers)
     data = r.json()
@@ -283,12 +283,15 @@ branch_options = [
         help='The git repo.')
 ]
 
-changelog_options = branch_options + [
+auth_options = [
+    click.option('--auth', envvar='GITHUB_ACCESS_TOKEN',
+        help='The GitHub auth token.'),
+]
+
+changelog_options = branch_options + auth_options + [
     click.option('--path', envvar='CHANGELOG',
         default="CHANGELOG.md",
         help='The path to the changelog file.'),
-    click.option('--auth', envvar='GITHUB_ACCESS_TOKEN',
-        help='The GitHub auth token.'),
     click.option('--resolve-backports', envvar='RESOLVE_BACKPORTS',
         is_flag=True,
         help='Resolve backport PRs to their originals.')
@@ -317,9 +320,10 @@ def bump_version(version_spec, version_cmd):
 
 @cli.command()
 @add_options(branch_options)
+@add_options(auth_options)
 @click.option('--output', envvar='GITHUB_ENV',
               help='Output file for env variables')
-def prep_env(branch, remote, repo, output):
+def prep_env(branch, remote, repo, auth, output):
     """Prep git and environment variables."""
     version = get_version()
     print(f'version={version}')
@@ -350,7 +354,7 @@ def prep_env(branch, remote, repo, output):
 
         # Use original ("source") repo as the default target on Actions.
         if not repo:
-            repo = get_source_repo(gh_repo)
+            repo = get_source_repo(gh_repo, auth=auth)
 
         run(f'git remote add {remote} https://github.com/{repo}')
 
@@ -388,7 +392,7 @@ IS_PRERELEASE={is_prerelease}
 
 @cli.command()
 @add_options(changelog_options)
-def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
+def prep_changelog(branch, remote, repo, auth, path, resolve_backports):
     """Prep the changelog entry."""
     branch = branch or get_branch()
 
@@ -437,7 +441,7 @@ def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
 @add_options(changelog_options)
 @click.option('--output', envvar='CHANGELOG_OUTPUT',
               help='The output file for changelog entry.')
-def validate_changelog(branch, remote, repo, path, auth, resolve_backports, output):
+def validate_changelog(branch, remote, repo, auth, path, resolve_backports, output):
     """Validate the changelog entry."""
     branch = branch or get_branch()
 
