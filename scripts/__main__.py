@@ -102,6 +102,9 @@ def get_source_repo(target, auth=None):
     headers = {'Authorization': 'token %s' % api_token}
     r = requests.get(f'https://api.github.com/repos/{target}', headers=headers)
     data = r.json()
+    # If this is the source repo, return the original target
+    if 'source' not in data:
+        return target
     return data['source']['full_name']
 
 

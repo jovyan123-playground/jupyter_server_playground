@@ -60,12 +60,11 @@ def git_repo(tmp_path):
     return tmp_path
 
 
-@fixture
-def py_package(git_repo):
+def create_python_package(git_repo):
     def r(cmd):
         run(shlex.split(cmd), cwd=git_repo)
 
-    setuppy = git_repo.joinpath("setup.py")
+    setuppy = git_repo / "setup.py"
     setuppy.write_text("""
 import setuptools
 import os
@@ -87,7 +86,7 @@ if __name__ == "__main__":
     setuptools.setup(**setup_args)
 """)
 
-    tbump = git_repo.joinpath("tbump.toml")
+    tbump = git_repo / "tbump.toml"
     tbump.write_text(r"""
 [version]
 current = "0.0.1"
@@ -104,10 +103,10 @@ tag_template = "v{new_version}"
 src = "setup.py"
 """)
 
-    foopy = git_repo.joinpath("foo.py")
+    foopy = git_repo / "foo.py"
     foopy.write_text('print("hello, world!")')
 
-    changelog = git_repo.joinpath("CHANGELOG.md")
+    changelog = git_repo / "CHANGELOG.md"
     changelog.write_text(f"""
 # Changelog
 
@@ -115,14 +114,14 @@ src = "setup.py"
 {main.END_MARKER}
 """)
 
-    pyproject = git_repo.joinpath("pyproject.toml")
+    pyproject = git_repo / "pyproject.toml"
     pyproject.write_text("""
 [build-system]
 requires = ["setuptools>=40.8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 """)
 
-    readme = git_repo.joinpath("README.md")
+    readme = git_repo / "README.md"
     readme.write_text("Hello from foo project")
 
     r('git add .')
@@ -138,6 +137,11 @@ def create_npm_package(git_repo):
     r('git add .')
     r('git commit -m "initial npm package"')
     return git_repo
+
+
+@fixture
+def py_package(git_repo):
+    return create_python_package(git_repo)
 
 
 @fixture
@@ -301,7 +305,7 @@ def test_prep_env(py_package, tmp_path):
     os.makedirs(py_package / '.github/workflows')
     shutil.copy(workflow, py_package / '.github/workflows')
 
-    env_file = tmp_path.joinpath('github.env')
+    env_file = tmp_path / 'github.env'
     version_spec = '1.0.1a1'
     main._bump_version(version_spec)
     env = dict(
