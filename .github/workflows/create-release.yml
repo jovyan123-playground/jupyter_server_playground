@@ -57,8 +57,8 @@ jobs:
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ${RELEASE_HELPER} extract-changelog
-        ${RELEASE_HELPER} prep-python-dist
+        ${RELEASE_HELPER} validate-changelog
+        ${RELEASE_HELPER} prep-python
         ${RELEASE_HELPER} prep-release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package

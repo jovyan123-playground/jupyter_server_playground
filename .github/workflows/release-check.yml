@@ -59,15 +59,15 @@ jobs:
     - name: Make a PR with the changelog entry change
       run: |
         echo "Can't make a PR on the release check"
-        echo "Reverting changes for clean slate"
+        echo "Commiting changes locally"
         git commit -a -m "Commit Changelog"
     - name: Run the release prep
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ${RELEASE_HELPER} bump-version
-        ${RELEASE_HELPER} extract-changelog
-        ${RELEASE_HELPER} prep-python-dist
+        ${RELEASE_HELPER} validate-changelog
+        ${RELEASE_HELPER} prep-python
         ${RELEASE_HELPER} prep-release
         cat ${CHANGELOG_OUTPUT}
     - name: Publish PyPI Package

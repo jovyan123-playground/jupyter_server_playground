@@ -350,7 +350,7 @@ def test_prep_changelog(py_package):
     os.chdir(prev_dir)
 
 
-def test_extract_changelog(py_package, tmp_path):
+def test_validate_changelog(py_package, tmp_path):
     prev_dir = os.getcwd()
     os.chdir(py_package)
     runner = CliRunner()
@@ -370,20 +370,22 @@ def test_extract_changelog(py_package, tmp_path):
     main._bump_version(version_spec)
     with patch('scripts.__main__.generate_activity_md') as mocked_gen:
         mocked_gen.return_value = CHANGELOG_ENTRY
-        result = runner.invoke(main.cli, ['extract-changelog', '--path', changelog, '--output', output])
+        result = runner.invoke(main.cli, ['validate-changelog', '--path', changelog, '--output', output])
     assert result.exit_code == 0
 
     assert PR_ENTRY in output.read_text()
-    assert f'{main.START_MARKER}\n{main.END_MARKER}' in changelog.read_text()
+    text = changelog.read_text()
+    assert f'{main.START_MARKER}\n## {version_spec}' in text
+    assert main.END_MARKER in text
 
     os.chdir(prev_dir)
 
 
-def test_prep_python_dist(py_package):
+def test_prep_python(py_package):
     prev_dir = os.getcwd()
     os.chdir(py_package)
     runner = CliRunner()
-    result = runner.invoke(main.cli, ['prep-python-dist'])
+    result = runner.invoke(main.cli, ['prep-python'])
     assert result.exit_code == 0
     os.chdir(prev_dir)
 

@@ -317,24 +317,23 @@ def bump_version(version_spec, version_cmd):
 
 @cli.command()
 @add_options(branch_options)
-def prep_env(branch, remote, repo):
-    """Prep the environment.  Set up Git, store variables if on GitHub Actions."""
+@click.option('--output', envvar='GITHUB_ENV',
+              help='Output file for env variables')
+def prep_env(branch, remote, repo, output):
+    """Prep git and environment variables."""
     version = get_version()
     print(f'version={version}')
 
     # Get the branch
     if not branch:
         if os.environ.get('GITHUB_BASE_REF'):
-            print('base ref')
             # GitHub Action PR Event
             branch = os.environ['GITHUB_BASE_REF']
         elif os.environ.get('GITHUB_REF'):
-            print('github ref')
             # GitHub Action Push Event
             # e.g. refs/heads/feature-branch-1
             branch = os.environ['GITHUB_REF'].split('/')[-1]
         else:
-            print('get branch')
             branch = get_branch()
 
     print(f'branch={branch}')
@@ -342,24 +341,29 @@ def prep_env(branch, remote, repo):
     gh_repo = os.environ.get('GITHUB_REPOSITORY')
 
     # Set up git config if on GitHub Actions
-    if 'GITHUB_ACTIONS' in os.environ:
+    is_action = 'GITHUB_ACTIONS' in os.environ
+    if is_action:
         # Use email address for the GitHub Actions bot
         # https://github.community/t/github-actions-bot-email-address/17204/6
         run('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"')
         run('git config --global user.name "GitHub Action"')
+
+        # Use original ("source") repo as the default target on Actions.
         if not repo:
-            # Get the source repo
             repo = get_source_repo(gh_repo)
 
         run(f'git remote add {remote} https://github.com/{repo}')
 
-    if not repo:
+    elif not repo:
         repo = get_repo(remote)
+
+    print(f'repository={repo}')
 
     run(f'git fetch {remote} {branch} --tags')
 
-    # Make sure the workflow file is the same
-    if gh_repo and repo != gh_repo:
+    # Make sure the local workflow file is the same as the remote
+    # when running on Actions
+    if is_action and repo != gh_repo:
         workflow = os.environ['GITHUB_WORKFLOW']
         path = f'./github/workflows/{workflow}.yml'
         diff = run(f'git diff HEAD {remote}/{branch} -- {path}')
@@ -368,20 +372,18 @@ def prep_env(branch, remote, repo):
             print(diff)
             raise ValueError(msg)
 
-    print(f'repo={repo}')
-
     final_version = re.match("([0-9]+.[0-9]+.[0-9]+)", version).groups()[0]
     is_prerelease = str(final_version != version).lower()
     print(f'is_prerelease={is_prerelease}')
 
-    if 'GITHUB_ENV' in os.environ:
-        Path(os.environ['GITHUB_ENV']).write_text(f"""
+    if output:
+        print(f'Writing env variables to {output} file')
+        Path(output).write_text(f"""
 BRANCH={branch}
 VERSION={version}
 REPOSITORY={repo}
 IS_PRERELEASE={is_prerelease}
 """.strip())
-        print('Wrote env variables to GITHUB_ENV file')
 
 
 @cli.command()
@@ -402,9 +404,7 @@ def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
     # Get the existing changelog and run some validation
     changelog = Path(path).read_text()
 
-    marker = f"{START_MARKER}\n{END_MARKER}"
-
-    if marker not in changelog:
+    if START_MARKER not in changelog or END_MARKER not in changelog:
         raise ValueError('Missing insert marker for changelog')
 
     if changelog.find(START_MARKER) != changelog.rfind(START_MARKER):
@@ -415,8 +415,9 @@ def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
     entry = get_changelog_entry(f'{remote}/{branch}', repo, path, version, auth=auth, resolve_backports=resolve_backports)
 
     # Insert the entry into the file
-    template = f"{START_MARKER}\n{entry}\n{END_MARKER}"
-    changelog = changelog.replace(marker, template)
+    template = f"{START_MARKER}\n{entry}\n{END_MARKER}\n"
+    changelog = changelog.replace(END_MARKER + '\n', '')
+    changelog = changelog.replace(START_MARKER, template)
 
     Path(path).write_text(changelog)
 
@@ -436,8 +437,8 @@ def prep_changelog(branch, remote, repo, path, auth, resolve_backports):
 @add_options(changelog_options)
 @click.option('--output', envvar='CHANGELOG_OUTPUT',
               help='The output file for changelog entry.')
-def extract_changelog(branch, remote, repo, path, auth, resolve_backports, output):
-    """Extract the changelog entry."""
+def validate_changelog(branch, remote, repo, path, auth, resolve_backports, output):
+    """Validate the changelog entry."""
     branch = branch or get_branch()
 
     # Get the new version
@@ -484,18 +485,11 @@ def extract_changelog(branch, remote, repo, path, auth, resolve_backports, outpu
     if output:
         Path(output).write_text(final_entry)
 
-    # Clear out the insertion markers and rewrite
-    changelog = changelog.replace(END_MARKER, '')
-    marker = f'{START_MARKER}\n{END_MARKER}\n'
-    changelog = changelog.replace(START_MARKER, marker)
-
-    Path(path).write_text(changelog)
-
 
 @cli.command()
 @click.option('--test-cmd', envvar='PY_TEST_CMD',
               help='The command to run in the test venvs.')
-def prep_python_dist(test_cmd):
+def prep_python(test_cmd):
     """Build and check the python dist files."""
     if not test_cmd:
         name = run('python setup.py --name')
