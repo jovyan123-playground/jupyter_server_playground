@@ -555,8 +555,8 @@ def prep_release(branch, remote, repo, version_cmd, post_version_spec):
         run(f'git commit -a -m "Bump to {post_version}"')
 
     # Verify the commits and tags
-    remote_branch = run(f'git name-rev --name-only HEAD')
-    diff = run(f'git --no-pager diff HEAD {remote}/{remote_branch}')
+    remote_branch = run(f'git rev-parse --symbolic-full-name --abbrev-ref @{u}')
+    diff = run(f'git --no-pager diff HEAD {remote_branch}')
 
     # If running in unit test, the branches are one and the same
     # Since the remote is a local directory
