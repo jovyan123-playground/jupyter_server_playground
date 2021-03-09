@@ -52,6 +52,8 @@ def get_version():
         return run('python setup.py --version', quiet=True)
     elif osp.exists('package.json'):
         return json.loads(Path('package.json').read_text())['version']
+    else:
+        raise ValueError('No version identifier could be found!')
 
 
 def format_pr_entry(target, number, auth=None):
