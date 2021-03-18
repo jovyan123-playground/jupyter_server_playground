@@ -834,14 +834,14 @@ class FilesRedirectHandler(JupyterHandler):
 
 
 class RedirectWithParams(web.RequestHandler):
-    """Sam as web.RedirectHandler, but preserves URL parameters"""
+    """Same as web.RedirectHandler, but preserves URL parameters"""
     def initialize(self, url, permanent=True):
-        self._url = url
+        self._url = url_escape(url)
         self._permanent = permanent
 
     def get(self):
         sep = '&' if '?' in self._url else '?'
-        url = sep.join([self._url, self.request.query])
+        url = sep.join([self._url, url_escape(self.request.query)])
         self.redirect(url, permanent=self._permanent)
 
 class PrometheusMetricsHandler(JupyterHandler):
