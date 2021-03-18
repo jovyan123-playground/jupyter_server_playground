@@ -1,5 +1,7 @@
 from jupyter_server.base.handlers import JupyterHandler
 from jupyter_server.extension.handler import ExtensionHandlerMixin, ExtensionHandlerJinjaMixin
+from jupyter_server.utils import url_escape
+
 
 class DefaultHandler(ExtensionHandlerMixin, JupyterHandler):
     def get(self):
@@ -20,7 +22,7 @@ class ParameterHandler(ExtensionHandlerMixin, JupyterHandler):
         components = [x for x in self.request.path.split("/") if x]
         self.write('<h1>Hello Simple App 1 from Handler.</h1>')
         self.write('<p>matched_part: {}</p>'.format(matched_part))
-        self.write('<p>var1: {}</p>'.format(var1))
+        self.write('<p>var1: {}</p>'.format(url_escape(var1)))
         self.write('<p>components: {}</p>'.format(components))
 
 class BaseTemplateHandler(ExtensionHandlerJinjaMixin, ExtensionHandlerMixin, JupyterHandler): pass
