@@ -1763,9 +1763,9 @@ class ServerApp(JupyterApp):
             except socket.error as e:
                 if e.errno == errno.EADDRINUSE:
                     if self.port_retries:
-                        self.log.info(_('The port %i is already in use, trying another port.') % port)
+                        self.log.info(_i18n('The port %i is already in use, trying another port.') % port)
                     else:
-                        self.log.info(_('The port %i is already in use.') % port)
+                        self.log.info(_i18n('The port %i is already in use.') % port)
                     continue
                 elif e.errno in (errno.EACCES, getattr(errno, 'WSAEACCES', errno.EACCES)):
                     self.log.warning(_i18n("Permission to listen on port %i denied") % port)
@@ -1778,10 +1778,10 @@ class ServerApp(JupyterApp):
                 break
         if not success:
             if self.port_retries:
-                self.log.critical(_('ERROR: the notebook server could not be started because '
+                self.log.critical(_i18n('ERROR: the notebook server could not be started because '
                               'no available port could be found.'))
             else:
-                self.log.critical(_('ERROR: the notebook server could not be started because '
+                self.log.critical(_i18n('ERROR: the notebook server could not be started because '
                               'port %i is not available.') % port)
             self.exit(1)
 
