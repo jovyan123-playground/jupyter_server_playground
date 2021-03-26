@@ -67,19 +67,19 @@ from jupyter_server import (
     __version__,
 )
 
-from .base.handlers import MainHandler, RedirectWithParams, Template404
-from .log import log_request
-from .services.kernels.kernelmanager import MappingKernelManager, AsyncMappingKernelManager
-from .services.config import ConfigManager
-from .services.contents.manager import AsyncContentsManager, ContentsManager
-from .services.contents.filemanager import AsyncFileContentsManager, FileContentsManager
-from .services.contents.largefilemanager import LargeFileManager
-from .services.sessions.sessionmanager import SessionManager
-from .gateway.managers import GatewayKernelManager, GatewayKernelSpecManager, GatewaySessionManager, GatewayClient
+from jupyter_server.base.handlers import MainHandler, RedirectWithParams, Template404
+from jupyter_server.log import log_request
+from jupyter_server.services.kernels.kernelmanager import MappingKernelManager, AsyncMappingKernelManager
+from jupyter_server.services.config import ConfigManager
+from jupyter_server.services.contents.manager import AsyncContentsManager, ContentsManager
+from jupyter_server.services.contents.filemanager import AsyncFileContentsManager, FileContentsManager
+from jupyter_server.services.contents.largefilemanager import LargeFileManager
+from jupyter_server.services.sessions.sessionmanager import SessionManager
+from jupyter_server.gateway.managers import GatewayKernelManager, GatewayKernelSpecManager, GatewaySessionManager, GatewayClient
 
-from .auth.login import LoginHandler
-from .auth.logout import LogoutHandler
-from .base.handlers import FileFindHandler
+from jupyter_server.auth.login import LoginHandler
+from jupyter_server.auth.logout import LogoutHandler
+from jupyter_server.base.handlers import FileFindHandler
 
 from traitlets.config import Config
 from traitlets.config.application import catch_config_error, boolean_flag
@@ -99,8 +99,8 @@ from ipython_genutils import py3compat
 from jupyter_core.paths import jupyter_runtime_dir, jupyter_path
 from jupyter_server._sysinfo import get_sys_info
 
-from ._tz import utcnow, utcfromtimestamp
-from .utils import (
+from jupyter_server._tz import utcnow, utcfromtimestamp
+from jupyter_server.utils import (
     url_path_join,
     check_pid,
     url_escape,
@@ -115,7 +115,7 @@ from jupyter_server.traittypes import TypeFromClasses
 
 # Tolerate missing terminado package.
 try:
-    from .terminal import TerminalManager
+    from jupyter_server.terminal import TerminalManager
     terminado_available = True
 except ImportError:
     terminado_available = False
@@ -399,7 +399,7 @@ class JupyterPasswordApp(JupyterApp):
         return os.path.join(self.config_dir, 'jupyter_server_config.json')
 
     def start(self):
-        from .auth.security import set_password
+        from jupyter_server.auth.security import set_password
         set_password(config_file=self.config_file)
         self.log.info("Wrote hashed password to %s" % self.config_file)
 
@@ -1570,7 +1570,7 @@ class ServerApp(JupyterApp):
             return
 
         try:
-            from .terminal import initialize
+            from jupyter_server.terminal import initialize
             initialize(self.web_app, self.root_dir, self.connection_url, self.terminado_settings)
             self.terminals_available = True
         except ImportError as e:
@@ -2089,7 +2089,7 @@ class ServerApp(JupyterApp):
         for line in self.running_server_info(kernel_count=False).split("\n"):
             info(line)
         info(_i18n("Use Control-C to stop this server and shut down all kernels (twice to skip confirmation)."))
-        if 'dev' in jupyter_server.__version__:
+        if 'dev' in __version__:
             info(_i18n("Welcome to Project Jupyter! Explore the various tools available"
                  " and their corresponding documentation. If you are interested"
                  " in contributing to the platform, please visit the community"
