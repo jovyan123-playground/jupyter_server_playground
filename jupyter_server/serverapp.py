@@ -149,6 +149,8 @@ JUPYTER_SERVICE_HANDLERS = dict(
     view=['jupyter_server.view.handlers']
 )
 
+DEFAULT_SERVER_PORT = 8888
+
 #-----------------------------------------------------------------------------
 # Helper functions
 #-----------------------------------------------------------------------------
@@ -453,8 +455,8 @@ class JupyterServerStopApp(JupyterApp):
     version = __version__
     description = "Stop currently running Jupyter server for a given port"
 
-    port = Integer(8888, config=True,
-        help="Port of the server to be killed. Default 8888")
+    port = Integer(DEFAULT_SERVER_PORT, config=True,
+        help=f"Port of the server to be killed. Default {DEFAULT_SERVER_PORT}")
 
     def parse_command_line(self, argv=None):
         super(JupyterServerStopApp, self).parse_command_line(argv)
@@ -721,9 +723,9 @@ class ServerApp(JupyterApp):
     )
 
     port_env = 'JUPYTER_PORT'
-    port_default_value = DEFAULT_NOTEBOOK_PORT
+    port_default_value = DEFAULT_SERVER_PORT
     port = Integer(port_default_value, config=True,
-        help=_("The port the notebook server will listen on (env: JUPYTER_PORT).")
+        help=_("The port the server will listen on (env: JUPYTER_PORT).")
     )
 
     @default('port')
