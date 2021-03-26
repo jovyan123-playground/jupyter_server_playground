@@ -725,7 +725,7 @@ class ServerApp(JupyterApp):
     port_env = 'JUPYTER_PORT'
     port_default_value = DEFAULT_SERVER_PORT
     port = Integer(port_default_value, config=True,
-        help=_("The port the server will listen on (env: JUPYTER_PORT).")
+        help=_i18n("The port the server will listen on (env: JUPYTER_PORT).")
     )
 
     @default('port')
@@ -735,7 +735,7 @@ class ServerApp(JupyterApp):
     port_retries_env = 'JUPYTER_PORT_RETRIES'
     port_retries_default_value = 50
     port_retries = Integer(port_retries_default_value, config=True,
-        help=_("The number of additional ports to try if the specified port is not "
+        help=_i18n("The number of additional ports to try if the specified port is not "
                "available (env: JUPYTER_PORT_RETRIES).")
     )
 
