@@ -4,9 +4,6 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import absolute_import, print_function
-
-import jupyter_server
 import binascii
 import datetime
 import errno
@@ -723,13 +720,26 @@ class ServerApp(JupyterApp):
         or containerized setups for example).""")
     )
 
-    port = Integer(8888, config=True,
-        help=_i18n("The port the Jupyter server will listen on.")
+    port_env = 'JUPYTER_PORT'
+    port_default_value = DEFAULT_NOTEBOOK_PORT
+    port = Integer(port_default_value, config=True,
+        help=_("The port the notebook server will listen on (env: JUPYTER_PORT).")
     )
 
-    port_retries = Integer(50, config=True,
-        help=_i18n("The number of additional ports to try if the specified port is not available.")
+    @default('port')
+    def port_default(self):
+        return int(os.getenv(self.port_env, self.port_default_value))
+
+    port_retries_env = 'JUPYTER_PORT_RETRIES'
+    port_retries_default_value = 50
+    port_retries = Integer(port_retries_default_value, config=True,
+        help=_("The number of additional ports to try if the specified port is not "
+               "available (env: JUPYTER_PORT_RETRIES).")
     )
+
+    @default('port_retries')
+    def port_retries_default(self):
+        return int(os.getenv(self.port_retries_env, self.port_retries_default_value))
 
     certfile = Unicode(u'', config=True,
         help=_i18n("""The full path to an SSL/TLS certificate file.""")
