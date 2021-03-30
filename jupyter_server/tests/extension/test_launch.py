@@ -102,9 +102,9 @@ def test_token_file(launch_instance, fetch, token):
     token_file.write_text(token, encoding='utf-8')
 
     launch_instance(add_token=False)
+    r = fetch("/mock")
     del os.environ['JUPYTER_TOKEN_FILE']
     token_file.unlink()
-    r = fetch("/mock")
     assert r.status_code == 200
 
 
