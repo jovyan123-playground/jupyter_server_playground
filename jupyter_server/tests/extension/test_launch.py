@@ -97,7 +97,7 @@ def test_base_url(launch_instance, fetch):
 
 
 def test_token_file(launch_instance, fetch, token):
-    token_file = Path('token_file')
+    token_file = Path('token_file.txt')
     os.environ['JUPYTER_TOKEN_FILE'] = str(token_file)
     token_file.write_text(token, encoding='utf-8')
 
