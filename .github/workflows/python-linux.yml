@@ -60,14 +60,15 @@ jobs:
       if: ${{ matrix.python-version != 'pypy3' }}
       run: |
         codecov
-    - name: Check the Manifest
-      if: ${{ matrix.python-version != 'pypy3' }}
-      run: |
-        pip install check-manifest
-        check-manifest -v
     - name: Test full install
       run: |
             pip uninstall -y jupyter_server
             pip install .
             cd /tmp
             pytest --pyargs jupyter_server
+    - name: Check the Manifest
+      if: ${{ matrix.python-version != 'pypy3' }}
+      run: |
+        pip install check-manifest
+        git clean -dfx
+        check-manifest -v
