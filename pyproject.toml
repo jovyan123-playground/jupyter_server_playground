@@ -3,9 +3,9 @@ requires = ["jupyter_packaging~=0.7", "setuptools>=40.8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.check-manifest]
-ignore = ["tbump.toml", ".*", "codecov.yml", "package-lock.json", "style/bootstrap*", ".pytest_cache/*"]
+ignore = ["tbump.toml", ".*", "codecov.yml", "package-lock.json", "bootstrap*"]
 
-[tool.pytest]
+[tool.pytest.ini_options]
 # Exclude the example tests.
 norecursedirs = "examples/*"
 
