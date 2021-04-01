@@ -66,3 +66,9 @@ jobs:
             pip install .
             cd /tmp
             pytest --pyargs jupyter_server
+    - name: Check the Manifest
+      if: ${{ matrix.python-version != 'pypy3' }}
+      run: |
+        pip install check-manifest
+        git clean -dfx
+        check-manifest -v
