@@ -1,0 +1,27 @@
+[build-system]
+requires = ["jupyter_packaging~=0.8.0"]
+build-backend = "jupyter_packaging.build_api"
+
+[tool.jupyter-packaging.builder]
+func = "jupyter_packaging.npm_builder"
+
+[tool.check-manifest]
+ignore = ["tbump.toml", ".*", "codecov.yml", "package-lock.json", "jupyter_server/static/style/bootstrap*"]
+
+[tool.pytest]
+# Exclude the example tests.
+norecursedirs = "examples/*"
+
+[tool.tbump.version]
+current = "1.5.1"
+regex = '''
+  (?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)
+  ((?P<channel>a|b|rc|.dev)(?P<release>\d+))?
+'''
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "v{new_version}"
+
+[[tool.tbump.file]]
+src = "jupyter_server/_version.py"
