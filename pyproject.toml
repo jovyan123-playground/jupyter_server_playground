@@ -3,7 +3,7 @@ requires = ["jupyter_packaging~=0.7", "setuptools>=40.8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.check-manifest]
-ignore = ["tbump.toml", ".*", "codecov.yml", "package-lock.json", "jupyter_server/static/style/bootstrap*"]
+ignore = ["tbump.toml", ".*", "codecov.yml", "package-lock.json", "style/bootstrap*", ".pytest_cache/*"]
 
 [tool.pytest]
 # Exclude the example tests.
