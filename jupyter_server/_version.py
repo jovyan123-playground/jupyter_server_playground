@@ -2,6 +2,7 @@
 store the current version info of the server.
 
 """
+import re
 
 # Version string must appear intact for tbump versioning
 __version__ = '1.6.0.dev0'
