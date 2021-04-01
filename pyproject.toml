@@ -1,6 +1,6 @@
 [build-system]
-requires = ["jupyter_packaging~=0.7", "setuptools>=40.8.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["jupyter_packaging~=0.8"]
+build-backend = "jupyter_packaging.build_api"
 
 [tool.check-manifest]
 ignore = ["tbump.toml", ".*", "codecov.yml", "package-lock.json", "bootstrap*"]
