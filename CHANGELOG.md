@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 1.5.3
+
+No merged PRs
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 1.5.1
 
 ([Full Changelog](https://github.com/jupyter-server/jupyter_server/compare/1.5.0...c3303cde880ecd1103118b8c7f9e5ebc19f0d1ba))
@@ -19,7 +25,7 @@ All notable changes to this project will be documented in this file.
 
 [@afshin](https://github.com/search?q=repo%3Ajupyter-server%2Fjupyter_server+involves%3Aafshin+updated%3A2021-03-23..2021-03-24&type=Issues) | [@minrk](https://github.com/search?q=repo%3Ajupyter-server%2Fjupyter_server+involves%3Aminrk+updated%3A2021-03-23..2021-03-24&type=Issues)
 
-<!-- <END NEW CHANGELOG ENTRY> -->
+
 
 ## 1.5.0
 
