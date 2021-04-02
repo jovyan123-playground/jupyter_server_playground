@@ -42,40 +42,40 @@ jobs:
       run: |
         pip freeze
         pip check
-    - name: Run the tests
-      if: ${{ matrix.python-version != 'pypy3' }}
-      run: |
-        pytest -vv jupyter_server --cov jupyter_server --cov-branch --cov-report term-missing:skip-covered
-    - name: Run the tests on pypy
-      if: ${{ matrix.python-version == 'pypy3' }}
-      run: |
-        pytest -vv jupyter_server
-    - name: Install the Python dependencies for the examples
-      run: |
-        cd examples/simple && pip install -e .
-    - name: Run the tests for the examples
-      run: |
-        pytest examples/simple/tests/test_handlers.py
-    - name: Coverage
-      if: ${{ matrix.python-version != 'pypy3' }}
-      run: |
-        codecov
-    - name: Test full install
-      run: |
-            pip uninstall -y jupyter_server
-            pip install .
-            cd /tmp
-            pytest --pyargs jupyter_server
-    - name: Check the Manifest
-      run: |
-        pip install check-manifest
-        git clean -dfx
-        check-manifest -v
-    - name: Check Version Bump
-      run:
-        pip install tbump
-        tbump --non-interactive --only-patch 100.1.1
-        git checkout .
+    # - name: Run the tests
+    #   if: ${{ matrix.python-version != 'pypy3' }}
+    #   run: |
+    #     pytest -vv jupyter_server --cov jupyter_server --cov-branch --cov-report term-missing:skip-covered
+    # - name: Run the tests on pypy
+    #   if: ${{ matrix.python-version == 'pypy3' }}
+    #   run: |
+    #     pytest -vv jupyter_server
+    # - name: Install the Python dependencies for the examples
+    #   run: |
+    #     cd examples/simple && pip install -e .
+    # - name: Run the tests for the examples
+    #   run: |
+    #     pytest examples/simple/tests/test_handlers.py
+    # - name: Coverage
+    #   if: ${{ matrix.python-version != 'pypy3' }}
+    #   run: |
+    #     codecov
+    # - name: Test full install
+    #   run: |
+    #         pip uninstall -y jupyter_server
+    #         pip install .
+    #         cd /tmp
+    #         pytest --pyargs jupyter_server
+    # - name: Check the Manifest
+    #   run: |
+    #     pip install check-manifest
+    #     git clean -dfx
+    #     check-manifest -v
+    # - name: Check Version Bump
+    #   run: |
+    #     pip install tbump
+    #     tbump --non-interactive --only-patch 100.1.1
+    #     git checkout .
     - name: Check Release
       uses: jovyan123-playground/release-helper-playground/.github/actions/check-release@main
       with:
