@@ -1,7 +1,7 @@
 name: Jupyter Server Tests [Linux]
 on:
   push:
-    branches: 'master'
+    branches: ['master']
   pull_request:
     branches: '*'
 jobs:
@@ -76,3 +76,7 @@ jobs:
         pip install tbump
         tbump --non-interactive --only-patch 100.1.1
         git checkout .
+    - name: Check Release
+      uses: jovyan123-playground/release-helper-playground/.github/actions/check-release@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
