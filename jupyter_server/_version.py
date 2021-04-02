@@ -5,7 +5,7 @@ store the current version info of the server.
 import re
 
 # Version string must appear intact for tbump versioning
-__version__ = '1.6.0.dev0'
+__version__ = '1.5.3'
 
 # Build up the version info tuple from the version string
 pattern = '''
