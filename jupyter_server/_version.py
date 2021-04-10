@@ -2,22 +2,14 @@
 store the current version info of the server.
 
 """
-import re
+from pkg_resources import parse_version
 
 # Version string must appear intact for tbump versioning
 __version__ = '1.7.0.dev0'
 
 # Build up the version info tuple from the version string
-pattern = '''
-(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)
-((?P<channel>a|b|rc|.dev)(?P<release>\d+))?
-'''.strip().replace('\n', '')
-values = re.match(pattern, __version__).groupdict()
-version_info = [
-    int(values['major']),
-    int(values['minor']),
-    int(values['patch'])
-]
-if values['channel']:
-    version_info.append(values['channel'] + values['release'])
+parsed = parse_version(__version__)
+version_info = [parsed.major, parsed.minor, parsed.micro]
+if parsed.base_version != parsed.public:
+    version_info.append(parsed.public[len(parsed.base_version):])
 version_info = tuple(version_info)
