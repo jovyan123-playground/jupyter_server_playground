@@ -79,5 +79,7 @@ jobs:
     - name: Check Release
       if: ${{ matrix.python-version == '3.7' }}
       uses: jovyan123-playground/release-helper-playground/.github/actions/check-release@main
+      env:
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
