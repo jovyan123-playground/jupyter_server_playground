@@ -77,6 +77,7 @@ jobs:
     #     tbump --non-interactive --only-patch 100.1.1
     #     git checkout .
     - name: Check Release
+      if: ${{ matrix.python-version == '3.7' }}
       uses: jovyan123-playground/release-helper-playground/.github/actions/check-release@main
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
