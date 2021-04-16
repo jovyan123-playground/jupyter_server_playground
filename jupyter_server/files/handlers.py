@@ -26,13 +26,14 @@ class FilesHandler(JupyterHandler):
         return super(FilesHandler, self).content_security_policy + \
                "; sandbox allow-scripts"
 
+    @web.authenticated
     def head(self, path):
         self.get(path, include_body=False)
         self.check_xsrf_cookie()
         return self.get(path, include_body=False)
 
     @web.authenticated
-    def get(self, path, include_body=True):
+    async def get(self, path, include_body=True):
         # /files/ requests must originate from the same site
         self.check_xsrf_cookie()
         cm = self.contents_manager
