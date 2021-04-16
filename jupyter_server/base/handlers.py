@@ -433,7 +433,7 @@ class JupyterHandler(AuthenticatedHandler):
             # Servers without authentication are vulnerable to XSRF
             return
         try:
-            return super(IPythonHandler, self).check_xsrf_cookie()
+            return super(JupyterHandler, self).check_xsrf_cookie()
         except web.HTTPError as e:
             if self.request.method in {'GET', 'HEAD'}:
                 # Consider Referer a sufficient cross-origin check for GET requests
