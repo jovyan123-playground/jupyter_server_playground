@@ -74,6 +74,7 @@ class AuthenticatedHandler(web.RequestHandler):
 
     def set_default_headers(self):
         headers = {}
+        headers["X-Content-Type-Options"] = "nosniff"
         headers.update(self.settings.get('headers', {}))
 
         headers["Content-Security-Policy"] = self.content_security_policy
@@ -687,6 +688,11 @@ class AuthenticatedFileHandler(JupyterHandler, web.StaticFileHandler):
         # origin so it can't interact with the Jupyter server.
         return super(AuthenticatedFileHandler, self).content_security_policy + \
                 "; sandbox allow-scripts"
+
+    @web.authenticated
+    def head(self, path):
+        self.check_xsrf_cookie()
+        return super(AuthenticatedFileHandler, self).head(path)
 
     @web.authenticated
     def get(self, path):
