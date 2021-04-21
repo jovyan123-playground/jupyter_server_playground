@@ -481,6 +481,7 @@ class ExtensionApp(JupyterApp):
         find_extensions = cls.load_other_extensions
         if 'jpserver_extensions' in cls.serverapp_config:
             jpserver_extensions.update(cls.serverapp_config['jpserver_extensions'])
+            cls.serverapp_config['jpserver_extensions'] = jpserver_extensions
             find_extensions = False
         serverapp = ServerApp.instance(
             jpserver_extensions=jpserver_extensions, **kwargs)
@@ -514,7 +515,6 @@ class ExtensionApp(JupyterApp):
         # before initializing server to make sure these
         # arguments trigger actions from the extension not the server.
         _preparse_for_stopping_flags(cls, args)
-
         serverapp = cls.initialize_server(argv=args)
 
         # Log if extension is blocking other extensions from loading.
