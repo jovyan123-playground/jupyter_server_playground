@@ -6,7 +6,7 @@ The recommended way to make a release is to use [`jupyter_releaser`](https://git
 
 ## Manual Release
 
-To create a manual release, perform the following steps...
+To create a manual release, perform the following steps:
 
 ### Set up
 
