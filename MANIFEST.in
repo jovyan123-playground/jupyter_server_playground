@@ -26,6 +26,7 @@ global-exclude *~
 global-exclude *.pyc
 global-exclude *.pyo
 prune .git
-prune .ipynb_checkpoints
-prune .pytest_cache
-prune .coverage
+prune **/.ipynb_checkpoints
+prune **/.pytest_cache
+prune **/.coverage
+prune **/.pytest_cache
