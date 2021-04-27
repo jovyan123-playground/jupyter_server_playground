@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- <START NEW CHANGELOG ENTRY> -->
+
+## 100.100.1
+
+([Full Changelog](https://github.com/jovyan123-playground/jupyter_server_playground/compare/1.4.0...be057422b1cad091692ee46a1bafe24046a72cac))
+
+### Merged PRs
+
+- Update RELEASE instructions [#31](https://github.com/jovyan123-playground/jupyter_server_playground/pull/31) ([@jovyan123-playground](https://github.com/jovyan123-playground))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jovyan123-playground/jupyter_server_playground/graphs/contributors?from=2021-02-18&to=2021-04-24&type=c))
+
+[@codecov](https://github.com/search?q=repo%3Ajovyan123-playground%2Fjupyter_server_playground+involves%3Acodecov+updated%3A2021-02-18..2021-04-24&type=Issues) | [@jovyan123-playground](https://github.com/search?q=repo%3Ajovyan123-playground%2Fjupyter_server_playground+involves%3Ajovyan123-playground+updated%3A2021-02-18..2021-04-24&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 1.6.4
 
 ([Full Changelog](https://github.com/jupyter-server/jupyter_server/compare/v1.6.3...68a64ea13be5d0d86460f04e0c47eb0b6662a0af))
@@ -30,7 +48,6 @@ All notable changes to this project will be documented in this file.
 ([GitHub contributors page for this release](https://github.com/jupyter-server/jupyter_server/graphs/contributors?from=2021-04-16&to=2021-04-21&type=c))
 
 [@kevin-bates](https://github.com/search?q=repo%3Ajupyter-server%2Fjupyter_server+involves%3Akevin-bates+updated%3A2021-04-16..2021-04-21&type=Issues)
-
 
 ## 1.6.2
 
