@@ -144,7 +144,7 @@ async def test_culling_config(jp_server_config, jp_configurable_serverapp):
     assert terminal_mgr_settings.cull_interval == CULL_INTERVAL
 
 
-@pytest.mark.skip_if(os.name=="nt")
+@pytest.mark.skipif(os.name=="nt", reason="culling times out on Windows in CI")
 async def test_culling(jp_server_config, jp_fetch):
     # POST request
     resp = await jp_fetch(
