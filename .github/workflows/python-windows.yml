@@ -49,6 +49,7 @@ jobs:
         # the file descriptions opened by the asyncio IOLoop.
         # This leads to a nasty, flaky race condition that we haven't
         # been able to solve.
+        pip install pywinpty==0.5.7
         pytest -vv -s jupyter_server/tests/test_terminal.py
     - name: Install the Python dependencies for the examples
       run: |
