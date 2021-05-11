@@ -144,6 +144,7 @@ async def test_culling_config(jp_server_config, jp_configurable_serverapp):
     assert terminal_mgr_settings.cull_interval == CULL_INTERVAL
 
 
+@pytest.mark.skip_if(os.name=="nt")
 async def test_culling(jp_server_config, jp_fetch):
     # POST request
     resp = await jp_fetch(
@@ -156,7 +157,7 @@ async def test_culling(jp_server_config, jp_fetch):
     last_activity = term['last_activity']
 
     culled = False
-    for i in range(20):  # Culling should occur in a few seconds
+    for i in range(10):  # Culling should occur in a few seconds
         try:
             resp = await jp_fetch(
                 'api', 'terminals', term_1,
