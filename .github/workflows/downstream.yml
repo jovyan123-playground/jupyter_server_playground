@@ -22,10 +22,8 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install build
-        python -m build .
-        pip install dist/jupyter_server*.whl
-        pip install --pre --upgrade jupyterlab_server jupyterlab nbclassic pytest pytest-cov
+        pip install ".[test]"
+        pip install --pre --upgrade jupyterlab_server jupyterlab nbclassic
         pip freeze
     - name: Run tests
       run: |
