@@ -41,7 +41,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from jupyter_core.paths import secure_write
 from jupyter_server.transutils import trans, _i18n
-from jupyter_server.utils import run_sync_in_loop
+from jupyter_server.utils import run_sync_in_loop, urljoin, pathname2url
 
 # the minimum viable tornado version: needs to be kept in sync with setup.py
 MIN_TORNADO = (6, 1, 0)
