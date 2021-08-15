@@ -1,5 +1,5 @@
-import asyncio
 import json
+import asyncio
 
 from anyio.to_thread import run_sync
 from tornado import web
@@ -9,8 +9,8 @@ from ...base.handlers import APIHandler
 
 LOCK = asyncio.Lock()
 
-
 class NbconvertRootHandler(APIHandler):
+
     @web.authenticated
     async def get(self):
         try:
@@ -39,7 +39,6 @@ class NbconvertRootHandler(APIHandler):
             }
 
         self.finish(json.dumps(res))
-
 
 default_handlers = [
     (r"/api/nbconvert", NbconvertRootHandler),
