@@ -10,7 +10,6 @@ pytestmark = pytest.mark.skipif(
 
 import os
 import subprocess
-import pathlib
 import time
 
 from jupyter_server.utils import urlencode_unix_socket, urlencode_unix_socket_path

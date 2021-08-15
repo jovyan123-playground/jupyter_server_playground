@@ -23,10 +23,8 @@ import signal
 import socket
 import stat
 import sys
-import tempfile
 import threading
 import time
-import warnings
 import webbrowser
 import urllib
 import inspect
@@ -93,17 +91,17 @@ from jupyter_core.application import (
 )
 from jupyter_core.paths import jupyter_config_path
 from jupyter_client import KernelManager
-from jupyter_client.kernelspec import KernelSpecManager, NoSuchKernel, NATIVE_KERNEL_NAME
+from jupyter_client.kernelspec import KernelSpecManager
 from jupyter_client.session import Session
 from nbformat.sign import NotebookNotary
 from traitlets import (
     Any, Dict, Unicode, Integer, List, Bool, Bytes, Instance,
     TraitError, Type, Float, observe, default, validate
 )
-from jupyter_core.paths import jupyter_runtime_dir, jupyter_path
+from jupyter_core.paths import jupyter_runtime_dir
 from jupyter_server._sysinfo import get_sys_info
 
-from jupyter_server._tz import utcnow, utcfromtimestamp
+from jupyter_server._tz import utcnow
 from jupyter_server.utils import (
     url_path_join,
     check_pid,
