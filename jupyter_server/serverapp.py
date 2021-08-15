@@ -26,7 +26,6 @@ import sys
 import threading
 import time
 import webbrowser
-from urllib.parse import urljoin
 import urllib
 import inspect
 import pathlib

@@ -16,7 +16,8 @@ from contextlib import contextmanager
 
 from urllib.parse import (quote, unquote, urlparse,
     urlsplit, urlunsplit, SplitResult)
-
+from urllib.parse import urljoin  # pylint: disable=unused-import
+from urllib.request import pathname2url  # pylint: disable=unused-import
 from tornado.httpclient import AsyncHTTPClient, HTTPClient, HTTPRequest
 from tornado.netutil import Resolver
 
