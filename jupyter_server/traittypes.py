@@ -1,5 +1,5 @@
 import inspect
-from traitlets import ClassBasedTraitType, Undefined, warn
+from traitlets import ClassBasedTraitType, Undefined, TraitError
 
 # Traitlet's 5.x includes a set of utilities for building
 # description strings for objects. Traitlets 5.x does not
@@ -10,7 +10,6 @@ from traitlets import ClassBasedTraitType, Undefined, warn
 try:
     from traitlets.utils.descriptions import describe
 except ImportError:
-    import inspect
     import re
     import types
 
@@ -138,6 +137,17 @@ except ImportError:
             return result[0].upper() + result[1:]
         else:
             return result
+
+    def _prefix(value):
+        if isinstance(value, types.MethodType):
+            name = describe(None, value.__self__, verbose=True) + '.'
+        else:
+            module = inspect.getmodule(value)
+            if module is not None and module.__name__ != "builtins":
+                name = module.__name__ + '.'
+            else:
+                name = ""
+        return name
 
 
 class TypeFromClasses(ClassBasedTraitType):
