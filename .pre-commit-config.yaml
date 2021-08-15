@@ -32,3 +32,5 @@ repos:
     hooks:
       - id: pylint
         args: [--disable=all, --enable=unused-import]
+ci:
+    autofix_prs: false
