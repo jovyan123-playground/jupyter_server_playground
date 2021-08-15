@@ -1,13 +1,16 @@
 import os
 
 import pytest
+
 from jupyter_core.paths import jupyter_config_path
 
-from jupyter_server.extension.manager import ExtensionManager
-from jupyter_server.extension.manager import ExtensionMetadataError
-from jupyter_server.extension.manager import ExtensionModuleNotFound
-from jupyter_server.extension.manager import ExtensionPackage
-from jupyter_server.extension.manager import ExtensionPoint
+from jupyter_server.extension.manager import (
+    ExtensionPoint,
+    ExtensionPackage,
+    ExtensionManager,
+    ExtensionMetadataError,
+    ExtensionModuleNotFound
+)
 
 # Use ServerApps environment because it monkeypatches
 # jupyter_core.paths and provides a config directory
@@ -57,7 +60,7 @@ def test_extension_package_api():
     path1 = metadata_list[0]
     app = path1["app"]
 
-    e = ExtensionPackage(name="jupyter_server.tests.extension.mockextensions")
+    e = ExtensionPackage(name='jupyter_server.tests.extension.mockextensions')
     e.extension_points
     assert hasattr(e, "extension_points")
     assert len(e.extension_points) == len(metadata_list)
@@ -75,10 +78,12 @@ def _normalize_path(path_list):
 
 
 def test_extension_manager_api():
-    jpserver_extensions = {"jupyter_server.tests.extension.mockextensions": True}
+    jpserver_extensions = {
+        "jupyter_server.tests.extension.mockextensions": True
+    }
     manager = ExtensionManager()
     assert manager.config_manager
-    expected = _normalize_path(os.path.join(jupyter_config_path()[0], "serverconfig"))
+    expected = _normalize_path(os.path.join(jupyter_config_path()[0], 'serverconfig'))
     assert _normalize_path(manager.config_manager.read_config_path[0]) == expected
     manager.from_jpserver_extensions(jpserver_extensions)
     assert len(manager.extensions) == 1

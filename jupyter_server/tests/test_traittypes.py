@@ -1,11 +1,12 @@
 import pytest
-from traitlets import HasTraits
-from traitlets import TraitError
+from traitlets import HasTraits, TraitError
 from traitlets.utils.importstring import import_item
 
+from jupyter_server.traittypes import (
+    InstanceFromClasses,
+    TypeFromClasses
+)
 from jupyter_server.services.contents.largefilemanager import LargeFileManager
-from jupyter_server.traittypes import InstanceFromClasses
-from jupyter_server.traittypes import TypeFromClasses
 
 
 class DummyClass:
@@ -24,37 +25,45 @@ class Thing(HasTraits):
             int,
             str,
             DummyClass,
-        ],
+        ]
     )
 
     b = TypeFromClasses(
         default_value=None,
         allow_none=True,
-        klasses=[DummyClass, int, "jupyter_server.services.contents.manager.ContentsManager"],
+        klasses=[
+            DummyClass,
+            int,
+            'jupyter_server.services.contents.manager.ContentsManager'
+        ]
     )
 
 
 class TestInstanceFromClasses:
-    @pytest.mark.parametrize("value", [1, "test", DummyClass()])
+
+    @pytest.mark.parametrize(
+        'value',
+        [1, 'test', DummyClass()]
+    )
     def test_good_values(self, value):
         thing = Thing(a=value)
         assert thing.a == value
 
-    @pytest.mark.parametrize("value", [2.4, object()])
+    @pytest.mark.parametrize(
+        'value',
+        [2.4, object()]
+    )
     def test_bad_values(self, value):
         with pytest.raises(TraitError) as e:
             thing = Thing(a=value)
 
 
 class TestTypeFromClasses:
+
     @pytest.mark.parametrize(
-        "value",
-        [
-            DummyClass,
-            DummyInt,
-            LargeFileManager,
-            "jupyter_server.services.contents.manager.ContentsManager",
-        ],
+        'value',
+        [DummyClass, DummyInt, LargeFileManager,
+            'jupyter_server.services.contents.manager.ContentsManager']
     )
     def test_good_values(self, value):
         thing = Thing(b=value)
@@ -62,7 +71,10 @@ class TestTypeFromClasses:
             value = import_item(value)
         assert thing.b == value
 
-    @pytest.mark.parametrize("value", [float, object])
+    @pytest.mark.parametrize(
+        'value',
+        [float, object]
+    )
     def test_bad_values(self, value):
         with pytest.raises(TraitError) as e:
             thing = Thing(b=value)
