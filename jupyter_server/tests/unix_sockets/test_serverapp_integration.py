@@ -164,7 +164,7 @@ def test_launch_socket_collision(jp_unix_socket_file):
     except Exception as ex:
         raise AssertionError(f"expected 'already in use' error, got '{ex}'!")
     else:
-        raise AssertionError(f"expected 'already in use' error, got success instead!")
+        raise AssertionError("expected 'already in use' error, got success instead!")
 
     # Stop the background server, ensure it's stopped and wait on the process to exit.
     subprocess.check_call(['jupyter-server', 'stop', sock])
