@@ -1,4 +1,4 @@
-from ast import safe_literal_eval
+from ast import literal_eval
 import inspect
 from traitlets import ClassBasedTraitType, Undefined, TraitError
 
@@ -361,4 +361,4 @@ class InstanceFromClasses(ClassBasedTraitType):
         return repr(self.make_dynamic_default())
 
     def from_string(self, s):
-        return safe_literal_eval(s)
+        return literal_eval(s)
