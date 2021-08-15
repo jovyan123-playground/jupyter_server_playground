@@ -1,3 +1,4 @@
+from ast import safe_literal_eval
 import inspect
 from traitlets import ClassBasedTraitType, Undefined, TraitError
 
@@ -297,7 +298,7 @@ class InstanceFromClasses(ClassBasedTraitType):
             self.klasses = klasses
         else:
             raise TraitError('The klasses attribute must be a list of class names or classes'
-                                ' not: %r' % klass)
+                                ' not: %r' % klasses)
 
         if (kw is not None) and not isinstance(kw, dict):
             raise TraitError("The 'kw' argument must be a dict or None.")
@@ -360,4 +361,4 @@ class InstanceFromClasses(ClassBasedTraitType):
         return repr(self.make_dynamic_default())
 
     def from_string(self, s):
-        return _safe_literal_eval(s)
+        return safe_literal_eval(s)
