@@ -26,6 +26,7 @@ import sys
 import threading
 import time
 import webbrowser
+from urllib.parse import urljoin
 import urllib
 import inspect
 import pathlib
@@ -106,7 +107,6 @@ from jupyter_server.utils import (
     url_path_join,
     check_pid,
     url_escape,
-    urljoin,
     pathname2url,
     unix_socket_in_use,
     urlencode_unix_socket_path,
