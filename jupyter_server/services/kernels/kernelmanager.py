@@ -5,6 +5,7 @@
 """
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
+import asyncio
 import os
 from collections import defaultdict
 from datetime import datetime
@@ -50,6 +51,8 @@ class MappingKernelManager(MultiKernelManager):
         return "jupyter_client.ioloop.IOLoopKernelManager"
 
     kernel_argv = List(Unicode())
+
+    use_pending_kernels = True
 
     root_dir = Unicode(config=True)
 
@@ -209,7 +212,7 @@ class MappingKernelManager(MultiKernelManager):
                 kwargs["kernel_id"] = kernel_id
             kernel_id = await ensure_async(self.pinned_superclass.start_kernel(self, **kwargs))
             self._kernel_connections[kernel_id] = 0
-            self._kernel_ports[kernel_id] = self._kernels[kernel_id].ports
+            task = asyncio.create_task(self._get_ports(kernel_id))
             self.start_watching_activity(kernel_id)
             self.log.info("Kernel started: %s" % kernel_id)
             self.log.debug("Kernel args: %r" % kwargs)
@@ -232,6 +235,11 @@ class MappingKernelManager(MultiKernelManager):
             self.initialize_culler()
 
         return kernel_id
+
+    async def _get_ports(self, kernel_id):
+        km = self.get_kernel(kernel_id)
+        await km.ready
+        self._kernel_ports[kernel_id] = km.ports
 
     def ports_changed(self, kernel_id):
         """Used by ZMQChannelsHandler to determine how to coordinate nudge and replays.
