@@ -53,7 +53,9 @@ async def create_multiple_sessions(session_manager, *kwargs_list):
     return sessions
 
 
-async def test_get_session(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_get_session(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     session = await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="bar", type="notebook"
     )
@@ -84,7 +86,9 @@ async def test_bad_get_session(session_manager):
         await session_manager.get_session(bad_id=session["id"])
 
 
-async def test_get_session_dead_kernel(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_get_session_dead_kernel(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     session = await session_manager.create_session(
         path="/path/to/1/test1.ipynb", kernel_name="python", type="notebook"
     )
@@ -97,7 +101,9 @@ async def test_get_session_dead_kernel(session_manager):
     assert listed == []
 
 
-async def test_list_session(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_list_session(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     sessions = await create_multiple_sessions(
         session_manager,
         dict(path="/path/to/1/test1.ipynb", kernel_name="python"),
@@ -150,7 +156,9 @@ async def test_list_session(session_manager):
     assert sessions == expected
 
 
-async def test_list_sessions_dead_kernel(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_list_sessions_dead_kernel(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     sessions = await create_multiple_sessions(
         session_manager,
         dict(path="/path/to/1/test1.ipynb", kernel_name="python"),
@@ -178,7 +186,9 @@ async def test_list_sessions_dead_kernel(session_manager):
     assert listed == expected
 
 
-async def test_update_session(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_update_session(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     session = await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="julia", type="notebook"
     )
@@ -202,7 +212,9 @@ async def test_update_session(session_manager):
     assert model == expected
 
 
-async def test_bad_update_session(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_bad_update_session(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     # try to update a session with a bad keyword ~ raise error
     session = await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="ir", type="notegbook"
@@ -214,7 +226,9 @@ async def test_bad_update_session(session_manager):
         )  # Bad keyword
 
 
-async def test_delete_session(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_delete_session(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     sessions = await create_multiple_sessions(
         session_manager,
         dict(path="/path/to/1/test1.ipynb", kernel_name="python"),
@@ -255,7 +269,9 @@ async def test_delete_session(session_manager):
     assert new_sessions == expected
 
 
-async def test_bad_delete_session(session_manager):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_bad_delete_session(session_manager, use_pending_kernels):
+    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
     # try to delete a session that doesn't exist ~ raise error
     await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="python", type="notebook"

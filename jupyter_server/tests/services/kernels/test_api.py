@@ -38,7 +38,12 @@ async def test_default_kernels(jp_fetch, jp_base_url, jp_cleanup_subprocesses):
     await jp_cleanup_subprocesses()
 
 
-async def test_main_kernel_handler(jp_fetch, jp_base_url, jp_cleanup_subprocesses):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_main_kernel_handler(
+    jp_fetch, jp_base_url, jp_cleanup_subprocesses, jp_serverapp, use_pending_kernels
+):
+    jp_serverapp.kernel_manager.use_pending_kernels = use_pending_kernels
+
     # Start the first kernel
     r = await jp_fetch(
         "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
@@ -102,7 +107,9 @@ async def test_main_kernel_handler(jp_fetch, jp_base_url, jp_cleanup_subprocesse
     await jp_cleanup_subprocesses()
 
 
-async def test_kernel_handler(jp_fetch, jp_cleanup_subprocesses):
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_kernel_handler(jp_fetch, jp_cleanup_subprocesses, jp_serverapp, use_pending_kernels):
+    jp_serverapp.kernel_manager.use_pending_kernels = use_pending_kernels
     # Create a kernel
     r = await jp_fetch(
         "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
