@@ -78,6 +78,8 @@ class SessionRootHandler(APIHandler):
                 self.set_status(501)
                 self.finish(json.dumps(dict(message=msg, short_message=status_msg)))
                 return
+            except Exception as e:
+                raise web.HTTPError(500, str(e)) from e
 
         location = url_path_join(self.base_url, "api", "sessions", model["id"])
         self.set_header("Location", location)

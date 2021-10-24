@@ -150,6 +150,14 @@ async def test_kernel_handler(jp_fetch, jp_cleanup_subprocesses, jp_serverapp, u
     await jp_cleanup_subprocesses()
 
 
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_kernel_handler_startup_error(
+    jp_fetch, jp_cleanup_subprocesses, jp_serverapp, use_pending_kernels
+):
+    pass
+    # TODO
+
+
 async def test_connection(
     jp_fetch, jp_ws_fetch, jp_http_port, jp_auth_header, jp_cleanup_subprocesses
 ):

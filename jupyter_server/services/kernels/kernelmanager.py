@@ -212,7 +212,7 @@ class MappingKernelManager(MultiKernelManager):
                 kwargs["kernel_id"] = kernel_id
             kernel_id = await ensure_async(self.pinned_superclass.start_kernel(self, **kwargs))
             self._kernel_connections[kernel_id] = 0
-            task = asyncio.create_task(self._get_ports(kernel_id))
+            asyncio.create_task(self._get_ports(kernel_id))
             self.start_watching_activity(kernel_id)
             self.log.info("Kernel started: %s" % kernel_id)
             self.log.debug("Kernel args: %r" % kwargs)
@@ -238,8 +238,11 @@ class MappingKernelManager(MultiKernelManager):
 
     async def _get_ports(self, kernel_id):
         km = self.get_kernel(kernel_id)
-        await km.ready
-        self._kernel_ports[kernel_id] = km.ports
+        try:
+            await km.ready
+            self._kernel_ports[kernel_id] = km.ports
+        except Exception:
+            self.log.exception(km.ready.exception())
 
     def ports_changed(self, kernel_id):
         """Used by ZMQChannelsHandler to determine how to coordinate nudge and replays.
@@ -456,6 +459,8 @@ class MappingKernelManager(MultiKernelManager):
             "execution_state": kernel.execution_state,
             "connections": self._kernel_connections.get(kernel_id, 0),
         }
+        if getattr(kernel, "reason"):
+            model["reason"] = kernel.reason
         return model
 
     def list_kernels(self):
@@ -487,6 +492,7 @@ class MappingKernelManager(MultiKernelManager):
         kernel = self._kernels[kernel_id]
         # add busy/activity markers:
         kernel.execution_state = "starting"
+        kernel.reason = ""
         kernel.last_activity = utcnow()
         kernel._activity_stream = kernel.connect_iopub()
         session = Session(
@@ -569,6 +575,17 @@ class MappingKernelManager(MultiKernelManager):
 
     async def cull_kernel_if_idle(self, kernel_id):
         kernel = self._kernels[kernel_id]
+
+        if getattr(kernel, "execution_state") == "dead":
+            self.log.warning(
+                "Culling '%s' dead kernel '%s' (%s).",
+                kernel.execution_state,
+                kernel.kernel_name,
+                kernel_id,
+            )
+            await ensure_async(self.shutdown_kernel(kernel_id))
+            return
+
         if hasattr(
             kernel, "last_activity"
         ):  # last_activity is monkey-patched, so ensure that has occurred

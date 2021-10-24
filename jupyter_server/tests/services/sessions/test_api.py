@@ -282,6 +282,21 @@ async def test_create_with_kernel_id(
 
 
 @pytest.mark.parametrize("use_pending_kernels", (False, True))
+async def test_create_with_bad_kernel_id(
+    session_client, jp_cleanup_subprocesses, jp_serverapp, use_pending_kernels
+):
+    jp_serverapp.kernel_manager.use_pending_kernels = use_pending_kernels
+    resp = await session_client.create("foo/nb1.py", type="file")
+    assert resp.code == 201
+    newsession = j(resp)
+    # TODO
+    assert newsession["path"] == "foo/nb1.py"
+    assert newsession["type"] == "file"
+    await session_client.cleanup()
+    await jp_cleanup_subprocesses()
+
+
+@pytest.mark.parametrize("use_pending_kernels", (False, True))
 async def test_delete(session_client, jp_cleanup_subprocesses, jp_serverapp, use_pending_kernels):
     jp_serverapp.kernel_manager.use_pending_kernels = use_pending_kernels
     resp = await session_client.create("foo/nb1.ipynb")

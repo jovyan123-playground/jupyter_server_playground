@@ -8,7 +8,6 @@ import json
 import logging
 from textwrap import dedent
 from traceback import format_tb
-import traceback
 
 from ipython_genutils.py3compat import cast_unicode
 from jupyter_client import protocol_version as client_protocol_version
@@ -331,7 +330,15 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
         # We don't want to wait forever, because browsers don't take it well when
         # servers never respond to websocket connection requests.
         kernel = self.kernel_manager.get_kernel(self.kernel_id)
-        await kernel.ready
+
+        if hasattr(kernel, "ready"):
+            try:
+                await kernel.ready
+            except Exception as e:
+                kernel.execution_state = "dead"
+                kernel.reason = str(e)
+                raise web.HTTPError(500, str(e)) from e
+
         self.session.key = kernel.session.key
         future = self.request_kernel_info()
 
