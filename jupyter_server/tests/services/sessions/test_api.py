@@ -7,6 +7,7 @@ import tornado
 from jupyter_client.ioloop import AsyncIOLoopKernelManager
 from nbformat import writes
 from nbformat.v4 import new_notebook
+from tornado.httpclient import HTTPClientError
 from traitlets import default
 
 from ...utils import expected_http_error
@@ -68,7 +69,7 @@ class SessionClient:
     async def get(self, id):
         return await self._req(id, method="GET")
 
-    async def create(self, path, type="notebook", kernel_name="python", kernel_id=None):
+    async def create(self, path, type="notebook", kernel_name=None, kernel_id=None):
         body = {"path": path, "type": type, "kernel": {"name": kernel_name, "id": kernel_id}}
         return await self._req(method="POST", body=body)
 
@@ -191,6 +192,60 @@ async def test_create(
     resp = await session_client.get(sid)
     got = j(resp)
     assert_session_equality(got, new_session)
+
+    # Need to find a better solution to this.
+    await session_client.cleanup()
+    await jp_cleanup_subprocesses()
+
+
+async def test_create_bad(
+    session_client, jp_base_url, jp_cleanup_subprocesses, jp_serverapp, jp_kernelspecs
+):
+    jp_serverapp.kernel_manager.use_pending_kernels = False
+
+    # Make sure no sessions exist.
+    jp_serverapp.kernel_manager.default_kernel_name = "bad"
+    resp = await session_client.list()
+    sessions = j(resp)
+    assert len(sessions) == 0
+
+    # Create a session.
+    with pytest.raises(HTTPClientError):
+        await session_client.create("foo/nb1.ipynb")
+
+    # Need to find a better solution to this.
+    await session_client.cleanup()
+    await jp_cleanup_subprocesses()
+
+
+async def test_create_bad_pending(
+    session_client, jp_base_url, jp_ws_fetch, jp_cleanup_subprocesses, jp_serverapp, jp_kernelspecs
+):
+    if not hasattr(jp_serverapp.kernel_manager, "use_pending_kernels"):
+        return
+
+    jp_serverapp.kernel_manager.use_pending_kernels = True
+
+    # Make sure no sessions exist.
+    jp_serverapp.kernel_manager.default_kernel_name = "bad"
+    resp = await session_client.list()
+    sessions = j(resp)
+    assert len(sessions) == 0
+
+    # Create a session.
+    resp = await session_client.create("foo/nb1.ipynb")
+    assert resp.code == 201
+
+    # Open a websocket connection.
+    kid = j(resp)["kernel"]["id"]
+    with pytest.raises(HTTPClientError):
+        await jp_ws_fetch("api", "kernels", kid, "channels")
+
+    # Get the updated kernel state
+    resp = await session_client.list()
+    session = j(resp)[0]
+    assert session["kernel"]["execution_state"] == "dead"
+    assert "non_existent_path" in session["kernel"]["reason"]
 
     # Need to find a better solution to this.
     await session_client.cleanup()
@@ -393,7 +448,11 @@ async def test_modify_kernel_name(
     kernel_list = j(resp)
     after["kernel"].pop("last_activity")
     [k.pop("last_activity") for k in kernel_list]
-    assert kernel_list == [after["kernel"]]
+    if not use_pending_kernels:
+        assert kernel_list == [after["kernel"]]
+    else:
+        assert len(kernel_list) == 2
+
     # Need to find a better solution to this.
     await session_client.cleanup()
     await jp_cleanup_subprocesses()
@@ -427,7 +486,10 @@ async def test_modify_kernel_id(
 
     kernel.pop("last_activity")
     [k.pop("last_activity") for k in kernel_list]
-    assert kernel_list == [kernel]
+    if not use_pending_kernels:
+        assert kernel_list == [kernel]
+    else:
+        assert len(kernel_list) == 2
 
     # Need to find a better solution to this.
     await session_client.cleanup()

@@ -4,6 +4,7 @@ import time
 import pytest
 import tornado
 from jupyter_client.kernelspec import NATIVE_KERNEL_NAME
+from tornado.httpclient import HTTPClientError
 
 from ...utils import expected_http_error
 from jupyter_server.utils import url_path_join
@@ -150,12 +151,28 @@ async def test_kernel_handler(jp_fetch, jp_cleanup_subprocesses, jp_serverapp, u
     await jp_cleanup_subprocesses()
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
 async def test_kernel_handler_startup_error(
-    jp_fetch, jp_cleanup_subprocesses, jp_serverapp, use_pending_kernels
+    jp_fetch, jp_cleanup_subprocesses, jp_serverapp, jp_kernelspecs
 ):
-    pass
-    # TODO
+    jp_serverapp.kernel_manager.use_pending_kernels = False
+    # Create a kernel
+    with pytest.raises(HTTPClientError):
+        await jp_fetch("api", "kernels", method="POST", body=json.dumps({"name": "bad"}))
+
+
+async def test_kernel_handler_startup_error_pending(
+    jp_fetch, jp_ws_fetch, jp_cleanup_subprocesses, jp_serverapp, jp_kernelspecs
+):
+    if not hasattr(jp_serverapp.kernel_manager, "use_pending_kernels"):
+        return
+
+    jp_serverapp.kernel_manager.use_pending_kernels = True
+    # Create a kernel
+    r = await jp_fetch("api", "kernels", method="POST", body=json.dumps({"name": "bad"}))
+    kid = json.loads(r.body.decode())["id"]
+
+    with pytest.raises(HTTPClientError):
+        await jp_ws_fetch("api", "kernels", kid, "channels")
 
 
 async def test_connection(

@@ -52,8 +52,6 @@ class MappingKernelManager(MultiKernelManager):
 
     kernel_argv = List(Unicode())
 
-    use_pending_kernels = True
-
     root_dir = Unicode(config=True)
 
     _kernel_connections = Dict()
