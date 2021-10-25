@@ -210,7 +210,7 @@ class MappingKernelManager(MultiKernelManager):
                 kwargs["kernel_id"] = kernel_id
             kernel_id = await ensure_async(self.pinned_superclass.start_kernel(self, **kwargs))
             self._kernel_connections[kernel_id] = 0
-            asyncio.create_task(self._get_ports(kernel_id))
+            asyncio.ensure_future(self._get_ports(kernel_id))
             self.start_watching_activity(kernel_id)
             self.log.info("Kernel started: %s" % kernel_id)
             self.log.debug("Kernel args: %r" % kwargs)
