@@ -457,7 +457,7 @@ class MappingKernelManager(MultiKernelManager):
             "execution_state": kernel.execution_state,
             "connections": self._kernel_connections.get(kernel_id, 0),
         }
-        if getattr(kernel, "reason"):
+        if getattr(kernel, "reason", None):
             model["reason"] = kernel.reason
         return model
 

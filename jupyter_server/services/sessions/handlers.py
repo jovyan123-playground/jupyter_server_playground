@@ -149,7 +149,7 @@ class SessionHandler(APIHandler):
             # shutdown the old one
             fut = asyncio.ensure_future(ensure_async(km.shutdown_kernel(before["kernel"]["id"])))
             # If we are not using pending kernels, wait for the kernel to shut down
-            if not getattr(km, "use_pending_kernels"):
+            if not getattr(km, "use_pending_kernels", None):
                 await fut
         self.finish(json.dumps(model, default=json_default))
 
