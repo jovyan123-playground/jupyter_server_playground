@@ -236,6 +236,10 @@ class MappingKernelManager(MultiKernelManager):
 
     async def _get_ports(self, kernel_id):
         km = self.get_kernel(kernel_id)
+        if not hasattr(km, "ready"):
+            self._kernel_ports[kernel_id] = km.ports
+            return
+
         try:
             await km.ready
             self._kernel_ports[kernel_id] = km.ports
