@@ -53,9 +53,7 @@ async def create_multiple_sessions(session_manager, *kwargs_list):
     return sessions
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_get_session(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_get_session(session_manager):
     session = await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="bar", type="notebook"
     )
@@ -86,9 +84,7 @@ async def test_bad_get_session(session_manager):
         await session_manager.get_session(bad_id=session["id"])
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_get_session_dead_kernel(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_get_session_dead_kernel(session_manager):
     session = await session_manager.create_session(
         path="/path/to/1/test1.ipynb", kernel_name="python", type="notebook"
     )
@@ -101,9 +97,7 @@ async def test_get_session_dead_kernel(session_manager, use_pending_kernels):
     assert listed == []
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_list_session(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_list_session(session_manager):
     sessions = await create_multiple_sessions(
         session_manager,
         dict(path="/path/to/1/test1.ipynb", kernel_name="python"),
@@ -156,9 +150,7 @@ async def test_list_session(session_manager, use_pending_kernels):
     assert sessions == expected
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_list_sessions_dead_kernel(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_list_sessions_dead_kernel(session_manager):
     sessions = await create_multiple_sessions(
         session_manager,
         dict(path="/path/to/1/test1.ipynb", kernel_name="python"),
@@ -186,9 +178,7 @@ async def test_list_sessions_dead_kernel(session_manager, use_pending_kernels):
     assert listed == expected
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_update_session(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_update_session(session_manager):
     session = await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="julia", type="notebook"
     )
@@ -212,9 +202,7 @@ async def test_update_session(session_manager, use_pending_kernels):
     assert model == expected
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_bad_update_session(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_bad_update_session(session_manager):
     # try to update a session with a bad keyword ~ raise error
     session = await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="ir", type="notegbook"
@@ -226,9 +214,7 @@ async def test_bad_update_session(session_manager, use_pending_kernels):
         )  # Bad keyword
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_delete_session(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_delete_session(session_manager):
     sessions = await create_multiple_sessions(
         session_manager,
         dict(path="/path/to/1/test1.ipynb", kernel_name="python"),
@@ -269,9 +255,7 @@ async def test_delete_session(session_manager, use_pending_kernels):
     assert new_sessions == expected
 
 
-@pytest.mark.parametrize("use_pending_kernels", (False, True))
-async def test_bad_delete_session(session_manager, use_pending_kernels):
-    session_manager.kernel_manager.use_pending_kernels = use_pending_kernels
+async def test_bad_delete_session(session_manager):
     # try to delete a session that doesn't exist ~ raise error
     await session_manager.create_session(
         path="/path/to/test.ipynb", kernel_name="python", type="notebook"
